@@ -1,0 +1,6 @@
+variable,cuándo se conoce el dato del día d,regla aplicada
+TRM_t,La tarde anterior a t (se calcula con las operaciones de t−1),Se usa la de la propia fila t
+Brent,Al cierre del mercado del día d,Último dato con fecha < t
+DXY,Al cierre del mercado del día d,Último dato con fecha < t
+TPM,Se anuncia antes de entrar en vigencia,Último dato con fecha < t
+DFF,La Fed de Nueva York la publica la mañana de d+1,Último dato con fecha < t − 1 (un día extra)

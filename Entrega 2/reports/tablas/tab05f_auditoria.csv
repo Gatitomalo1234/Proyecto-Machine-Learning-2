@@ -1,0 +1,7 @@
+,superada
+solo desarrollo en este notebook,True
+validación posterior al entrenamiento con gap ≥ 5,True
+mismos cortes para los 7 modelos,True
+predicciones sin valores faltantes,True
+escalador ajustado solo con el entrenamiento del corte,True
+la métrica reproduce el RMSE de copiar la TRM de hoy,True

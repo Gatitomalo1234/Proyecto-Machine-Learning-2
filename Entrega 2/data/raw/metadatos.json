@@ -1,0 +1,68 @@
+{
+  "trm": {
+    "archivo": "trm_banrep.xml",
+    "fuente": "TRM diaria (COP por USD), Banco de la República, servicio web SDMX, flujo DF_TRM_DAILY_HIST",
+    "url": "https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_TRM_DAILY_HIST,1.0/all/ALL/?startPeriod=2003&dimensionAtObservation=TIME_PERIOD&detail=full",
+    "descargado_utc": "2026-09-30T01:17:18+00:00",
+    "md5": "eff5741000b4277d8b42ae1fcd09a43b",
+    "bytes": 1631593,
+    "filas": 8674,
+    "fecha_min": "2003-01-01",
+    "fecha_max": "2026-09-30"
+  },
+  "trm_vigencias": {
+    "archivo": "trm_vigencias_datosgov.csv",
+    "fuente": "TRM con fechas de vigencia (una fila por TRM publicada), Superfinanciera en datos.gov.co, conjunto 32sa-8pi3",
+    "url": "https://www.datos.gov.co/resource/32sa-8pi3.csv?$limit=50000&$order=vigenciadesde&$where=vigenciadesde>='2003-01-01'",
+    "descargado_utc": "2026-09-30T01:17:19+00:00",
+    "md5": "cf29a1dceb83b234681365072962b425",
+    "bytes": 382497,
+    "filas": 5633,
+    "fecha_min": "2003-01-03",
+    "fecha_max": "2026-09-30"
+  },
+  "tpm": {
+    "archivo": "tpm_banrep.xml",
+    "fuente": "Tasa de política monetaria vigente al día (%), Banco de la República, servicio web SDMX, flujo DF_CBR_DAILY_HIST",
+    "url": "https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_CBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2003&dimensionAtObservation=TIME_PERIOD&detail=full",
+    "descargado_utc": "2026-09-30T01:17:29+00:00",
+    "md5": "d0381fe72f6171096572afa61035bd80",
+    "bytes": 1600144,
+    "filas": 8673,
+    "fecha_min": "2003-01-01",
+    "fecha_max": "2026-09-29"
+  },
+  "brent": {
+    "archivo": "brent_fred.csv",
+    "fuente": "Petróleo Brent, USD por barril, FRED serie DCOILBRENTEU",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU",
+    "descargado_utc": "2026-09-30T01:17:29+00:00",
+    "md5": "9900f9d3a6c66c240563cf31a5df909b",
+    "bytes": 169823,
+    "filas": 10265,
+    "fecha_min": "1987-05-20",
+    "fecha_max": "2026-09-22"
+  },
+  "dff": {
+    "archivo": "dff_fred.csv",
+    "fuente": "Tasa efectiva de fondos federales (%), FRED serie DFF",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF",
+    "descargado_utc": "2026-09-30T01:17:29+00:00",
+    "md5": "e14578b638b691963eecb0f0d5d20508",
+    "bytes": 424043,
+    "filas": 26388,
+    "fecha_min": "1954-07-01",
+    "fecha_max": "2026-09-28"
+  },
+  "dxy": {
+    "archivo": "dxy_yahoo.csv",
+    "fuente": "Índice del dólar (DXY), cierre diario, Yahoo Finance DX-Y.NYB vía yfinance",
+    "url": "yfinance: DX-Y.NYB",
+    "descargado_utc": "2026-09-30T01:17:30+00:00",
+    "md5": "0148016862e8b168bb888a35df3d121a",
+    "bytes": 601733,
+    "filas": 5988,
+    "fecha_min": "2003-01-02",
+    "fecha_max": "2026-09-29"
+  }
+}

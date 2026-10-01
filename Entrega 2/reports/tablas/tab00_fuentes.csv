@@ -1,0 +1,7 @@
+,fuente,descargado_utc,filas,fecha_min,fecha_max,md5
+trm,"TRM diaria (COP por USD), Banco de la República, servicio web SDMX, flujo DF_TRM_DAILY_HIST",2026-09-30T01:17:18+00:00,8674,2003-01-01,2026-09-30,eff5741000b4277d8b42ae1fcd09a43b
+trm_vigencias,"TRM con fechas de vigencia (una fila por TRM publicada), Superfinanciera en datos.gov.co, conjunto 32sa-8pi3",2026-09-30T01:17:19+00:00,5633,2003-01-03,2026-09-30,cf29a1dceb83b234681365072962b425
+tpm,"Tasa de política monetaria vigente al día (%), Banco de la República, servicio web SDMX, flujo DF_CBR_DAILY_HIST",2026-09-30T01:17:29+00:00,8673,2003-01-01,2026-09-29,d0381fe72f6171096572afa61035bd80
+brent,"Petróleo Brent, USD por barril, FRED serie DCOILBRENTEU",2026-09-30T01:17:29+00:00,10265,1987-05-20,2026-09-22,9900f9d3a6c66c240563cf31a5df909b
+dff,"Tasa efectiva de fondos federales (%), FRED serie DFF",2026-09-30T01:17:29+00:00,26388,1954-07-01,2026-09-28,e14578b638b691963eecb0f0d5d20508
+dxy,"Índice del dólar (DXY), cierre diario, Yahoo Finance DX-Y.NYB vía yfinance",2026-09-30T01:17:30+00:00,5988,2003-01-02,2026-09-29,0148016862e8b168bb888a35df3d121a

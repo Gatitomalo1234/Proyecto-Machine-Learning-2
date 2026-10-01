@@ -1,0 +1,161 @@
+{
+  "md5_contenido": "0e4e09244ce880576a14400d9d91e75c",
+  "semilla": 42,
+  "periodo": [
+    "2003-12-01",
+    "2026-09-29"
+  ],
+  "md5_dataset": "2654c2770795de2083ca13733515d49c",
+  "particion": {
+    "fraccion_test": 0.2,
+    "filas_desarrollo": 4320,
+    "filas_purga": 1,
+    "filas_test": 1080,
+    "desarrollo_desde": "2003-12-17",
+    "desarrollo_hasta": "2022-03-01",
+    "test_desde": "2022-03-03",
+    "test_hasta": "2026-09-26",
+    "trm_max_desarrollo": 4153.91
+  },
+  "validacion": {
+    "cortes_externos": 5,
+    "cortes_internos": 3,
+    "gap": 5,
+    "combinaciones_busqueda": 15
+  },
+  "regla_mejor_modelo": "menor RMSE medio en validación entre las 6 configuraciones de boosting",
+  "mejor_boosting": "CatBoost · solo_trm",
+  "modelos": {
+    "Línea base (lineal)": {
+      "algoritmo": "lineal",
+      "variables": [
+        "r_trm_l1",
+        "r_trm_l5",
+        "r_trm_l10"
+      ],
+      "hiperparametros": {}
+    },
+    "LightGBM · solo_trm": {
+      "algoritmo": "LightGBM",
+      "variables": [
+        "r_trm_l1",
+        "r_trm_l5",
+        "r_trm_l10"
+      ],
+      "hiperparametros": {
+        "subsample": 0.6,
+        "reg_lambda": 1.0,
+        "num_leaves": 4,
+        "n_estimators": 200,
+        "min_child_samples": 100,
+        "max_depth": 2,
+        "learning_rate": 0.03,
+        "colsample_bytree": 0.8
+      }
+    },
+    "LightGBM · trm_macro": {
+      "algoritmo": "LightGBM",
+      "variables": [
+        "r_trm_l1",
+        "r_trm_l5",
+        "r_trm_l10",
+        "r_brent",
+        "r_dxy",
+        "dif_tasas"
+      ],
+      "hiperparametros": {
+        "subsample": 0.6,
+        "reg_lambda": 1.0,
+        "num_leaves": 31,
+        "n_estimators": 200,
+        "min_child_samples": 200,
+        "max_depth": 2,
+        "learning_rate": 0.03,
+        "colsample_bytree": 0.8
+      }
+    },
+    "CatBoost · solo_trm": {
+      "algoritmo": "CatBoost",
+      "variables": [
+        "r_trm_l1",
+        "r_trm_l5",
+        "r_trm_l10"
+      ],
+      "hiperparametros": {
+        "subsample": 0.8,
+        "rsm": 0.8,
+        "min_data_in_leaf": 50,
+        "learning_rate": 0.03,
+        "l2_leaf_reg": 3.0,
+        "iterations": 200,
+        "depth": 2
+      }
+    },
+    "CatBoost · trm_macro": {
+      "algoritmo": "CatBoost",
+      "variables": [
+        "r_trm_l1",
+        "r_trm_l5",
+        "r_trm_l10",
+        "r_brent",
+        "r_dxy",
+        "dif_tasas"
+      ],
+      "hiperparametros": {
+        "subsample": 1.0,
+        "rsm": 1.0,
+        "min_data_in_leaf": 100,
+        "learning_rate": 0.03,
+        "l2_leaf_reg": 3.0,
+        "iterations": 200,
+        "depth": 4
+      }
+    },
+    "XGBoost · solo_trm": {
+      "algoritmo": "XGBoost",
+      "variables": [
+        "r_trm_l1",
+        "r_trm_l5",
+        "r_trm_l10"
+      ],
+      "hiperparametros": {
+        "subsample": 1.0,
+        "reg_lambda": 1.0,
+        "n_estimators": 100,
+        "min_child_weight": 20,
+        "max_depth": 2,
+        "learning_rate": 0.05,
+        "colsample_bytree": 0.6
+      }
+    },
+    "XGBoost · trm_macro": {
+      "algoritmo": "XGBoost",
+      "variables": [
+        "r_trm_l1",
+        "r_trm_l5",
+        "r_trm_l10",
+        "r_brent",
+        "r_dxy",
+        "dif_tasas"
+      ],
+      "hiperparametros": {
+        "subsample": 0.8,
+        "reg_lambda": 0.0,
+        "n_estimators": 400,
+        "min_child_weight": 10,
+        "max_depth": 2,
+        "learning_rate": 0.01,
+        "colsample_bytree": 1.0
+      }
+    }
+  },
+  "huella_predicciones_desarrollo": {
+    "Línea base (lineal)": "54ee8fc9a969a00c4d7a2fb06cb8c0a9",
+    "LightGBM · solo_trm": "0660628b843f73ad195376503755ca90",
+    "LightGBM · trm_macro": "2239c5c3ecec9ad17d2c00ca37381fc0",
+    "CatBoost · solo_trm": "bb2e506e5150f07a3dd7d6e7d32346b4",
+    "CatBoost · trm_macro": "c07920673f503e2941f6b8d2bd1431bd",
+    "XGBoost · solo_trm": "69127b60481ae42996e6ac69e0fad20e",
+    "XGBoost · trm_macro": "f530a604186da5ae10bce180743bed4a"
+  }
+}

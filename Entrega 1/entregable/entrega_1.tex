@@ -1,0 +1,130 @@
+  \documentclass[11pt,letterpaper]{article}
+
+  % ===================== Paquetes =====================
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage[spanish]{babel}
+  \usepackage[margin=2.5cm]{geometry}
+  \usepackage{enumitem}
+  \setlist{itemsep=2pt, topsep=4pt, parsep=0pt}
+  \usepackage[hidelinks]{hyperref}
+  \usepackage{titlesec}
+  \titlespacing*{\section}{0pt}{14pt}{6pt}
+
+  \setlength{\parindent}{0pt}
+  \setlength{\parskip}{6pt}
+
+  % ===================== Datos del documento =====================
+  \newcommand{\tituloproyecto}{Predicción de la TRM con Gradient Boosting: el aporte de variables macroeconómicas locales frente a un modelo autorregresivo}
+  \newcommand{\integranteuno}{Nicolás Cárdenas Díaz}
+  \newcommand{\integrantedos}{María Paula Muñoz Malaver}
+
+  \begin{document}
+
+  % ===================== Portada =====================
+  \begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+
+  {\large Universidad Externado de Colombia\par}
+  {\large Machine Learning II\par}
+
+  \vspace{2.5cm}
+
+  {\Large \textbf{\tituloproyecto}\par}
+
+  \vspace{1cm}
+
+  {\large Primera entrega --- Proyecto Integrador\par}
+  {\large Fase 1: comprensión del artículo y planteamiento\par}
+
+  \vspace{2.5cm}
+
+  {\large \integranteuno \par}
+  {\large \integrantedos \par}
+
+  \vfill
+
+  {\large \today\par}
+
+  \end{titlepage}
+
+  % ===================== Cuerpo =====================
+
+  \section*{6.1. Comprensión y sustentación del artículo}
+
+  El mercado forex mueve más de \$6.6 billones de dólares diarios y es altamente volátil, por lo que predecir el precio de un par de divisas es difícil incluso con buenos datos. El artículo compara tres modelos de gradient boosting ---LightGBM, CatBoost y XGBoost--- prediciendo el precio de cierre diario de cinco pares mayores (GBP/USD, EUR/USD, AUD/USD, NZD/USD, USD/CHF), buscando cuál rinde mejor. Es una comparación puntual: los tres modelos ya se habían usado por separado en mercados financieros, pero no se habían enfrentado entre sí específicamente en forex.
+
+  Los tres son variantes de gradient boosting ---combinan árboles de decisión de forma iterativa, cada uno corrigiendo el error del anterior--- pero difieren en cómo construyen esos árboles. LightGBM crece por hoja en vez de por nivel (\textit{leaf-wise}), lo que reduce más la pérdida pero es más propenso a sobreajustar en datasets pequeños, y acelera el entrenamiento muestreando por gradiente (GOSS). CatBoost crece árboles simétricos nivel a nivel y usa \textit{Ordered Target Statistics} para codificar información sin fuga, ajustando automáticamente sus hiperparámetros. XGBoost también crece nivel a nivel, pero regulariza explícitamente la función objetivo ---penaliza árboles complejos--- y optimiza con una expansión de Taylor de segundo orden sobre la pérdida.
+
+  El estudio asume que el precio de cierre diario, normalizado con MinMax, contiene señal suficiente para predecir el siguiente valor sin necesidad de variables macroeconómicas adicionales; que un split fijo 80/20 basta para medir generalización; y que los hallazgos en estos cinco pares son extrapolables a otros mercados financieros (acciones, cripto, commodities). Bajo esos supuestos, los tres modelos predicen con buena precisión ($R^2$ entre 0.76 y 0.99 según el par), y LightGBM resulta consistentemente el mejor en $R^2$ y RMSE en los cinco pares ---aunque por un margen pequeño frente a CatBoost y XGBoost--- y además entrena más rápido.
+
+  La limitación central es que el artículo no explica qué variables predictoras usa más allá del precio mismo, ni si el split respeta el orden temporal, un riesgo real de fuga de datos en series de tiempo. Tampoco valida con \textit{cross-validation} ni reporta ajuste de hiperparámetros para LightGBM y XGBoost, y la Tabla 1 tiene inconsistencias numéricas (valores de MAE y RMSE que rompen el orden de magnitud esperado en la misma fila), señal de que los resultados no se revisaron con cuidado. Es, además, un preprint sin revisión por pares.
+
+  \section*{6.2. Planteamiento del problema}
+
+  \paragraph{Pregunta a responder.} ¿La incorporación de variables macroeconómicas locales (petróleo, diferencial de tasas Banrep--Fed, fortaleza del dólar) mejora la predicción del precio diario de la TRM frente a un modelo que solo usa su comportamiento pasado, y cuál de los tres algoritmos de gradient boosting aprovecha mejor esa información?
+
+  \paragraph{Objetivo general.} Determinar si la incorporación de variables macroeconómicas locales mejora la predicción del precio diario de la TRM frente a un modelo autorregresivo, y cuál de los tres algoritmos de gradient boosting ---LightGBM, CatBoost y XGBoost--- aprovecha mejor esa información.
+
+  \paragraph{Objetivos específicos.}
+  \begin{itemize}[leftmargin=1.2em]
+    \item Construir un modelo de línea base autorregresivo (solo rezagos del precio de la TRM) como referencia mínima.
+    \item Integrar en un flujo reproducible las variables macro seleccionadas (petróleo, diferencial de tasas, DXY) junto con los rezagos del precio.
+    \item Entrenar y comparar LightGBM, CatBoost y XGBoost sobre el modelo enriquecido, evaluando su desempeño con métricas de regresión.
+    \item Cuantificar el aporte de las variables macro comparando el desempeño del modelo enriquecido contra la línea base.
+  \end{itemize}
+
+  \paragraph{Tipo de tarea.} Regresión --- se predice un valor continuo (precio de cierre diario de la TRM), no una categoría.
+
+  \paragraph{Variable objetivo y relevancia local.} La variable objetivo es el precio de cierre diario de la TRM (USD/COP). Su relevancia en Colombia es directa: determina el costo de las importaciones y la deuda pública y privada denominada en dólares, incide en la inflación importada, y es un insumo central en las decisiones de política monetaria del Banco de la República. A diferencia de los cinco pares del artículo original ---todos economías desarrolladas---, la TRM refleja además la dependencia de Colombia del petróleo como principal fuente de divisas.
+
+  \paragraph{Método a reproducir/adaptar y técnicas del curso.} Se reproduce el núcleo del método del artículo: comparar LightGBM, CatBoost y XGBoost en la predicción de una serie cambiaria diaria. Se evalúa con RMSE, MAE y $R^2$, elegidas por lo que aporta cada una frente al problema real y no porque el artículo las use: el RMSE penaliza con mayor peso los errores grandes, lo relevante aquí porque un desvío grande en la TRM ---no uno típico--- es el que realmente le cuesta caro a un importador, a un pago de deuda en dólares o a una decisión de Banrep, por lo que se toma como métrica principal de referencia; el MAE da el error típico en pesos, en las mismas unidades del problema, útil para comunicar el desempeño a un tomador de decisiones no técnico; y el $R^2$ mide qué proporción de la variabilidad diaria de la TRM logran explicar las variables incluidas, lo que conecta directamente con la pregunta de investigación (cuánto aporta agregar las variables macro). Se adapta el método en dos frentes que el artículo no contempla: (1) se agregan variables macroeconómicas como predictores, en vez de usar solo el precio pasado; y (2) se construye una línea base autorregresiva explícita para medir el aporte real de esas variables. Técnicamente, esto se implementa con \texttt{Pipeline} de scikit-learn para garantizar reproducibilidad, validación con partición cronológica (sin fuga de información, dado que es una serie de tiempo), y las librerías \texttt{xgboost}, \texttt{lightgbm} y \texttt{catboost} del stack del curso.
+
+  \section*{6.3. Estrategia de datos}
+
+  \paragraph{Vía elegida y justificación.} Dataset real, sin simulación. Las cuatro series necesarias ---TRM, petróleo, tasas de interés y DXY--- son públicas, verificables y se actualizan a diario por instituciones oficiales (Banco de la República, FRED, Yahoo Finance). La simulación se justifica cuando el fenómeno real no es accesible o se necesitan escenarios hipotéticos; ninguno de los dos casos aplica aquí, así que simular introduciría un riesgo innecesario sin ningún beneficio.
+
+  \paragraph{Simulación.} No aplica --- dataset 100\% real, ninguna de las cuatro series se genera ni se complementa artificialmente.
+
+  \paragraph{Caracterización del conjunto previsto.}
+  \begin{itemize}[leftmargin=1.2em]
+    \item \textbf{Variable objetivo:} TRM diaria (USD/COP) --- Banco de la República, Portal de Estadísticas Económicas (SUAMECA), sector externo $\rightarrow$ tipo de cambio $\rightarrow$ TRM. Serie oficial, certificada a diario por la Superintendencia Financiera con base en el Banrep.
+    \item \textbf{Predictores:} (1) rezagos de la propia TRM (lags 1, 5, 10 días); (2) precio del petróleo WTI/Brent --- FRED, series \texttt{DCOILWTICO}/\texttt{DCOILBRENTEU}, diarias desde 1987; (3) diferencial de tasas: Tasa de Política Monetaria de Banrep (SUAMECA) menos Federal Funds Rate (FRED, serie \texttt{DFF}, diaria); (4) índice DXY --- Yahoo Finance, ticker \texttt{DX-Y.NYB} vía \texttt{yfinance}.
+    \item \textbf{Tamaño:} partiendo de dic-2003 (mismo inicio que el artículo original) hasta hoy, \textasciitilde5700 registros diarios antes de alinear calendarios; después de cruzar las 4 fuentes se espera quedar por encima de los 5000 exigidos --- se confirma al descargar y hacer el merge.
+    \item \textbf{Calidad inicial:} TRM sin huecos relevantes esperados (se certifica todo día hábil colombiano); petróleo y Fed Funds Rate (FRED) son series robustas y de alta calidad, con huecos solo en feriados/fines de semana de EE.\,UU.; DXY con la misma calidad que usó el artículo original; la tasa de política monetaria \textbf{no cambia a diario}, solo en las \textasciitilde8 reuniones anuales de la Junta Directiva de Banrep (hoy en 12.0\%), así que como serie diaria queda constante entre reuniones --- correcto económicamente, no un defecto de datos. Riesgo principal: alinear calendarios distintos (Colombia vs.\ EE.\,UU.) sin fuga de información, resuelto con \textit{forward-fill} estrictamente hacia atrás en el merge por fecha.
+  \end{itemize}
+
+  \section*{6.4. Plan de modelamiento y línea base}
+
+  \paragraph{Modelos avanzados candidatos.} LightGBM, CatBoost y XGBoost --- los tres modelos de gradient boosting que compara el artículo original, entrenados aquí sobre el conjunto enriquecido (TRM + petróleo + diferencial de tasas + DXY) definido en 6.3.
+
+  \paragraph{Métrica principal de evaluación y justificación.} RMSE como métrica principal: penaliza con mayor peso los errores grandes, que son los que realmente le cuestan caro a un importador, a un pago de deuda en dólares o a una decisión de Banrep. Se complementa con MAE (error típico en pesos, interpretable para un no técnico) y $R^2$ (variabilidad explicada, conecta directamente con la pregunta de investigación sobre el aporte de las variables macro).
+
+  \paragraph{Estrategia de validación prevista.} Partición estrictamente cronológica entre entrenamiento y prueba ---nunca aleatoria---, algo que el artículo original no aclara y que aquí se declara explícitamente para no filtrar información del futuro. Para el ajuste de hiperparámetros dentro del conjunto de entrenamiento se prevé validación cruzada de series de tiempo (ventana expandida), a ejecutar en la Segunda Entrega junto con el ajuste fino de cada modelo. Cualquier transformación (por ejemplo, escalamiento) se ajusta solo con los datos de entrenamiento de cada partición, nunca con el conjunto completo.
+
+  \paragraph{Modelo de línea base.} Regresión lineal simple sobre los rezagos de la TRM ---modelo autorregresivo de nivel Machine Learning I, ya anticipado como objetivo específico en 6.2---. Es la referencia mínima frente a la cual se mide la mejora de los tres modelos de boosting: si el modelo enriquecido con variables macro no logra superarla, la conclusión honesta es que esas variables no aportan valor predictivo incremental frente a la propia inercia de la serie.
+
+  \begin{thebibliography}{9}
+
+  \bibitem{articulo}
+  Eslami Ghayour, A., \& Yousefi, A. (2023). \textit{Performance Analysis of Gradient Boosting Models for Forex Market Prediction}. SSRN Preprint. \url{https://ssrn.com/abstract=4450688}
+
+  \bibitem{banrep-trm}
+  Banco de la República de Colombia. \textit{Tasa Representativa del Mercado (TRM)}. Portal de Estadísticas Económicas (SUAMECA). \url{https://www.banrep.gov.co}
+
+  \bibitem{banrep-tpm}
+  Banco de la República de Colombia. \textit{Tasa de Política Monetaria}. Portal de Estadísticas Económicas (SUAMECA). \url{https://suameca.banrep.gov.co}
+
+  \bibitem{fred-oil}
+  Federal Reserve Bank of St. Louis. \textit{Crude Oil Prices: West Texas Intermediate (DCOILWTICO) y Brent - Europe (DCOILBRENTEU)}. FRED Economic Data. \url{https://fred.stlouisfed.org}
+
+  \bibitem{fred-dff}
+  Federal Reserve Bank of St. Louis. \textit{Federal Funds Effective Rate (DFF)}. FRED Economic Data. \url{https://fred.stlouisfed.org/series/DFF}
+
+  \bibitem{yahoo-dxy}
+  Yahoo Finance. \textit{US Dollar Index (DX-Y.NYB)}. \url{https://finance.yahoo.com/quote/DX-Y.NYB}
+
+  \end{thebibliography}
+
+  \end{document}

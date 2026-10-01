@@ -1,0 +1,5 @@
+hipótesis,enunciado (EDA),evidencia en validación
+H1,"La línea base logra un R² sobre retornos pequeño y positivo, cercano a 0,03",R² medio 0.0193 ± 0.0165; positivo en 4 de 5 cortes
+H2,"Los boosting no superan de forma apreciable a la línea base (Δ R² < 0,005)","Mejor boosting: CatBoost · solo_trm, R² 0.0249 (Δ = +0.0055); gana en RMSE en 4 de 5 cortes"
+H3,Las macro aportan poco y de forma inestable,"LightGBM: aportan (4/5, Δ R² +0.0006); CatBoost: aporte inestable (2/5, Δ R² -0.0070); XGBoost: no aportan (1/5, Δ R² -0.0182)"
+H4,El error es mayor en los cortes turbulentos,Correlación entre volatilidad del corte y RMSE de la línea base: 0.61

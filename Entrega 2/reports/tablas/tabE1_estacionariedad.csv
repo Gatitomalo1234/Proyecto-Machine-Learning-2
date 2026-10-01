@@ -1,0 +1,9 @@
+serie,p_ADF,p_KPSS,conclusion
+TRM (nivel),0.923409382284639,0.01,no estacionaria
+TRM (retorno = y),0.0,0.0712561328735792,estacionaria
+Brent (nivel),0.2652664051933947,0.01,no estacionaria
+Brent (retorno),1.079570796988058e-19,0.1,estacionaria
+DXY (nivel),0.5164782527838555,0.01,no estacionaria
+DXY (retorno),0.0,0.1,estacionaria
+Diferencial TPM − DFF (nivel),0.09734321304258381,0.01,no estacionaria
+Diferencial (cambio diario),1.6195721875447024e-09,0.1,estacionaria

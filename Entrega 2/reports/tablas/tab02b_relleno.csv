@@ -1,0 +1,5 @@
+variable,rezago_publicacion_dias,filas_con_dato_repetido,pct_repetido,antiguedad_mediana_dias,antiguedad_p95_dias,antiguedad_max_dias,filas_con_dato_de_mas_de_5_dias
+brent,0,129,2.383592017738359,1.0,1.0,9.0,14
+dxy,0,10,0.18477457501847747,1.0,1.0,5.0,0
+tpm,0,0,0.0,1.0,1.0,1.0,0
+dff,1,0,0.0,2.0,2.0,2.0,0

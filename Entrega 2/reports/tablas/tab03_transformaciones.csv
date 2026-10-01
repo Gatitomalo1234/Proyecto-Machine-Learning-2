@@ -1,0 +1,8 @@
+variable,fórmula (a = valor alineado del paso 2),justificación
+y (objetivo),ln(TRM_{t+1} / TRM_t),Retorno de la siguiente TRM. Los árboles no extrapolan fuera del rango de entrenamiento; el retorno se mueve en un rango parecido en todas las épocas
+r_trm_l1,ln(TRM_t / TRM_{t−1}),Rezago de 1 día (Entrega 1). La TRM es un promedio del día: un movimiento suele continuar
+r_trm_l5,ln(TRM_{t−4} / TRM_{t−5}),Rezago de 5 días (Entrega 1): memoria de una semana hábil
+r_trm_l10,ln(TRM_{t−9} / TRM_{t−10}),Rezago de 10 días (Entrega 1): memoria de dos semanas hábiles
+r_brent,ln(Brent_a(t) / Brent_a(t−1)),"Petróleo (Entrega 1), solo Brent: principal fuente de dólares; se espera signo negativo"
+r_dxy,ln(DXY_a(t) / DXY_a(t−1)),Fortaleza global del dólar (Entrega 1); se espera signo positivo
+dif_tasas,"TPM_a(t) − DFF_a(t), en puntos porcentuales","Diferencial Banrep–Fed (Entrega 1), en nivel porque es una tasa acotada; se espera signo negativo"

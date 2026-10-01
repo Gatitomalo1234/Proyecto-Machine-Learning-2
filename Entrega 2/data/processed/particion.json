@@ -1,0 +1,11 @@
+{
+  "fraccion_test": 0.2,
+  "filas_desarrollo": 4320,
+  "filas_purga": 1,
+  "filas_test": 1080,
+  "desarrollo_desde": "2003-12-17",
+  "desarrollo_hasta": "2022-03-01",
+  "test_desde": "2022-03-03",
+  "test_hasta": "2026-09-26",
+  "trm_max_desarrollo": 4153.91
+}

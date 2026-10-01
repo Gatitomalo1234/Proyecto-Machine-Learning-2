@@ -1,0 +1,8 @@
+tema,Entrega 1,Entrega 2,motivo
+Variable objetivo,Precio diario de la TRM (nivel),Retorno ln(TRM_{t+1}/TRM_t); nivel reconstruido para el error en pesos,"Niveles no estacionarios (E1); techo de extrapolación de los árboles (nb 04, Figura 3)"
+Variables,"Rezagos 1, 5, 10 de la TRM; petróleo; diferencial Banrep−Fed; DXY","Las mismas, expresadas en retornos; el diferencial en nivel",Coherencia con el objetivo en retornos; los árboles tampoco extrapolan en las variables
+Petróleo,WTI o Brent,Solo Brent,Casi colineales; el crudo colombiano se referencia al Brent; el WTI fue negativo en abril de 2020
+Métricas,"RMSE (principal), MAE y R²",Las mismas; el R² se calcula sobre retornos,"El R² en niveles da 0,99 incluso copiando la TRM de hoy (nb 04)"
+Alineación,"""Forward-fill estrictamente hacia atrás""",Último dato estrictamente anterior a t; DFF con un día extra,Precisión: Brent y DXY cierran después del mercado colombiano; la DFF se publica al día siguiente
+Validación,Partición cronológica + CV temporal para hiperparámetros,"La misma, anidada en un walk-forward de 5 cortes",Rúbrica 7.4: validación anidada y resultados con variabilidad
+Comparación,Tres boosting con macro frente a la línea base,Tres boosting con y sin macro frente a la línea base,Separa el efecto del algoritmo del efecto de las variables macro
