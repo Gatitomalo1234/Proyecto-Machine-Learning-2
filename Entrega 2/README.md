@@ -31,7 +31,7 @@ Los cambios frente a la Entrega 1 y su motivo están en `reports/tablas/tab05b_c
 
 ```
 Entrega 2/
-├── README.md, requirements.txt (versiones exactas), .gitignore, .vscode/
+├── README.md, requirements.txt (versiones exactas), .vscode/
 ├── config_congelada.json      Configuración elegida solo con desarrollo, con MD5 de su contenido
 ├── src/                       Código reutilizable
 │   ├── config.py              Semilla, periodo, rutas, variables, modelos y parámetros de validación
