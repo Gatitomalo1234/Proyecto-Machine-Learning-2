@@ -1,0 +1,8 @@
+,decision
+mejor_boosting_regla_congelada,CatBoost · solo_trm
+delta_rmse_frente_a_base,-0.15743018274037013
+ic95,[-0.489; +0.125]
+p_valor_diebold_mariano,0.3190844535115646
+significativamente_peor_que_base,False
+modelo_final,CatBoost · solo_trm
+referencia,Línea base (lineal)

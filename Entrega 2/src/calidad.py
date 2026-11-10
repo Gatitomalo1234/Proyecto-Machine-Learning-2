@@ -109,3 +109,35 @@ def tabla_calidad(series: dict[str, pd.DataFrame], rangos: dict[str, tuple[float
             "cambios_extremos": len(extremos[nombre]),
         })
     return pd.DataFrame(filas).set_index("serie")
+
+
+def picos_de_un_dia(valores: pd.Series, umbral: float = 0.05, reversion: float = 0.25) -> pd.Series:
+    """Marca los "picos de un día": saltos grandes que se deshacen al día siguiente (datos erróneos).
+
+    Un precio que salta más de `umbral` y al día siguiente vuelve casi al nivel anterior no es un
+    movimiento de mercado sino un dato mal registrado. Se usa en el notebook 08b con los datos del
+    artículo base (p. ej. AUD/USD = 4,57 el 25 de diciembre de 2006, cuando el par valía 0,78).
+
+    Parámetros
+    ----------
+    valores : pd.Series
+        Precios en orden cronológico, positivos.
+    umbral : float, por defecto 0.05
+        Tamaño mínimo del salto, como retorno logarítmico (5 %). Con 4 % se marcaban movimientos
+        reales de la crisis de 2008 (AUD/USD y la propia TRM); con 5 % solo quedan los errores.
+    reversion : float, por defecto 0.25
+        Fracción máxima del salto que puede quedar sin deshacer al día siguiente: si
+        |r_t + r_{t+1}| < reversion · |r_t|, el salto se deshizo en al menos un 75 %.
+
+    Devuelve
+    --------
+    pd.Series
+        Booleana, con el mismo índice que `valores`; True en el día del pico.
+
+    Notas
+    -----
+    Un movimiento real extremo que no se deshace (p. ej. USD/CHF −17 % el 15 de enero de 2015,
+    cuando el banco central suizo soltó el franco) no se marca.
+    """
+    r = np.log(valores).diff()
+    return (r.abs() > umbral) & ((r + r.shift(-1)).abs() < reversion * r.abs())

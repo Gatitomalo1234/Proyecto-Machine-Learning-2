@@ -1,0 +1,100 @@
+{
+  "modelo_final": "CatBoost · solo_trm",
+  "algoritmo": "CatBoost",
+  "referencia": "Línea base (lineal)",
+  "respuesta_pregunta": "Las macro no mejoran la predicción diaria de la TRM; ningún boosting se distingue de la regresión lineal (Diebold-Mariano en validación).",
+  "objetivo": {
+    "nombre": "y",
+    "formula": "ln(TRM_{t+1} / TRM_t)",
+    "reconstruccion_precio": "TRM_{t+1} = TRM_t * exp(yhat)"
+  },
+  "variables": {
+    "r_trm_l1": "ln(TRM_t / TRM_{t-1})",
+    "r_trm_l5": "ln(TRM_{t-4} / TRM_{t-5})",
+    "r_trm_l10": "ln(TRM_{t-9} / TRM_{t-10})"
+  },
+  "preprocesamiento": "ninguno que aprenda de los datos (los árboles no necesitan escalado)",
+  "hiperparametros": {
+    "subsample": 0.8,
+    "rsm": 0.8,
+    "min_data_in_leaf": 50,
+    "learning_rate": 0.03,
+    "l2_leaf_reg": 3.0,
+    "iterations": 200,
+    "depth": 2
+  },
+  "fijos": {
+    "semilla": 42,
+    "hilos": 1,
+    "bootstrap_type": "Bernoulli"
+  },
+  "regla_eleccion": "menor RMSE medio en validación entre las 6 configuraciones de boosting; se mantiene si no es significativamente peor que la base (Diebold-Mariano al 5 %).",
+  "evaluacion": {
+    "validacion (media de 5 cortes)": {
+      "rmse_pesos": 20.706380914168577,
+      "mae_pesos": 14.774178283127522,
+      "r2_retornos": 0.02486087477293879,
+      "delta_rmse_vs_base": -0.15743018274037013,
+      "p_dm_vs_base": 0.3190844535115646,
+      "ic95_delta": "[-0.489; +0.125]"
+    },
+    "test (1.080 días, una vez)": {
+      "rmse_pesos": 35.64086587198991,
+      "mae_pesos": 27.09154282573052,
+      "r2_retornos": 0.036966579743236916,
+      "delta_rmse_vs_base": 0.012745893275187825,
+      "p_dm_vs_base": 0.8983389903576744,
+      "ic95_delta": "[-0.121; +0.227]"
+    }
+  },
+  "datos": {
+    "periodo_estudio": [
+      "2003-12-01",
+      "2026-09-29"
+    ],
+    "particion": {
+      "fraccion_test": 0.2,
+      "filas_desarrollo": 4320,
+      "filas_purga": 1,
+      "filas_test": 1080,
+      "desarrollo_desde": "2003-12-17",
+      "desarrollo_hasta": "2022-03-01",
+      "test_desde": "2022-03-03",
+      "test_hasta": "2026-09-26",
+      "trm_max_desarrollo": 4153.91
+    },
+    "md5_dataset": "38929ed82d75910fba7bb526ab3d16f2",
+    "md5_config_congelada": "580c4f306e227c6c677ede6291b6eef2"
+  },
+  "modelo_congelado": {
+    "archivo": "models/modelos_finales.joblib",
+    "entrenado_con": "desarrollo, 2003-12-17 a 2022-03-01",
+    "huella": "bb2e506e5150f07a3dd7d6e7d32346b4"
+  },
+  "modelo_despliegue": {
+    "archivo": "models/modelo_final_despliegue.joblib",
+    "contenido": [
+      "CatBoost · solo_trm",
+      "Línea base (lineal)"
+    ],
+    "entrenado_con": {
+      "fecha_desde": "2003-12-17",
+      "fecha_hasta": "2026-09-26",
+      "dias": 5401
+    },
+    "huella": {
+      "CatBoost · solo_trm": "0393ceb696b9451db152bfb6dcffb13b",
+      "Línea base (lineal)": "441c87fbedb64dd190888713409f6778"
+    },
+    "cercania_al_congelado": {
+      "correlacion_predicciones_desarrollo": 0.9754875130844242,
+      "diferencia_media_abs_pb": 1.531478833240173
+    }
+  },
+  "limitaciones": [
+    "Empate estadístico con la regresión lineal: la ventaja es de centavos.",
+    "Un solo periodo de test (2022–2026), ya abierto en la Entrega 2.",
+    "La memoria de un día se debilita con volatilidad alta; los movimientos grandes no se anticipan.",
+    "Solo predice el día siguiente; no sirve para horizontes más largos."
+  ]
+}

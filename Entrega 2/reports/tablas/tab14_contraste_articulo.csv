@@ -1,0 +1,14 @@
+aspecto,articulo,este_proyecto,estado,por_que_o_evidencia
+Pregunta,"Comparar LightGBM, CatBoost y XGBoost para predecir el precio de cierre diario de 5 pares de divisas","Los mismos 3 algoritmos para la TRM diaria, y si las macro locales (Brent, diferencial Banrep–Fed, DXY) mejoran la predicción",Adaptado,"Contexto local (dólares del petróleo, tasa ligada a la Fed) y una pregunta propia, no solo cuál gana"
+Algoritmos,"LightGBM, CatBoost, XGBoost",Los mismos,Igual,Es el núcleo del método
+Horizonte,Un día,Un día,Igual,—
+Método tal cual,"Precio en nivel, MinMax, 80/20, configuración por defecto",Reproducido con la TRM (nb 04) y con sus propios datos (nb 08b): sus R² se recuperan (p. ej. GBP/USD LightGBM 0.891 frente a 0.896),Igual,Comprueba que la lectura del método es correcta (su 80/20 fue cronológico)
+Objetivo,Precio del día siguiente (nivel),"Retorno logarítmico del día siguiente, ln(TRMₜ₊₁ / TRMₜ); el precio se reconstruye como TRMₜ · e^ŷ",Adaptado,"Los árboles no predicen fuera del rango visto: con la TRM, el 59 % de la evaluación quedó fuera y el R² en nivel cayó a -0.15"
+Variables,No las especifica,"Retornos de la TRM de hace 1, 5 y 10 días (+ Brent, DXY y diferencial en la versión con macro)",Adaptado,Coherentes con el objetivo en retornos; las de la Entrega 1
+Validación,Un corte 80/20,Partición cronológica + validación anidada (5 cortes walk-forward; búsqueda interna con 3 cortes) + test una vez,Adaptado,Medir sin fuga y con variabilidad (≈ 7 pesos entre periodos)
+Hiperparámetros,Por defecto,"Búsqueda aleatoria (15 combinaciones) con validación cruzada temporal; robusta frente a Optuna (< 0,22 pesos)",Adaptado,"Con señal débil, los árboles por defecto (profundos) sobreajustan"
+Referencia,Ninguna (solo los 3 entre sí),Regresión lineal sobre los rezagos (línea base) y copiar el precio de hoy,Adaptado,"Sin referencia, R² ≈ 0,9 parece bueno; copiar el precio de hoy da 0.981–0.993 en sus pares"
+Métricas,"RMSE, MAE, MSE y R² en nivel",RMSE y MAE en pesos; R² sobre retornos; pruebas Diebold-Mariano y bootstrap,Adaptado,El R² en nivel no distingue un modelo de copiar el precio de hoy
+Resultado: ganador,"LightGBM en los 5 pares, por poco","Con la TRM: empate estadístico de los 3 y con la lineal (DM p ≥ 0,32); con sus datos: LightGBM en 3 pares, XGBoost en 2",Distinto,Las diferencias son menores que el ruido; el ganador no es robusto
+Resultado: desempeño,"R² de 0,76 a 0,99 (""buena precisión"")","Su boosting no supera a copiar el precio de hoy en ninguno de sus pares; en retornos, R² de -0.011 a 0.001 (lineal). TRM: R² sobre retornos positivo y memoria de 0.17",Distinto,"Su R² mide la persistencia del precio, no la capacidad de predecir"
+Calidad de los datos,No se discute,"7 picos erróneos en sus datos (EUR/USD 5, AUD/USD 1, USD/CHF 1); EUR/USD sin fechas; TRM verificada contra la Superfinanciera",Distinto,Los picos crean una memoria negativa falsa en EUR/USD y AUD/USD

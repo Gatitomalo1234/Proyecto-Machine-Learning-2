@@ -1,0 +1,8 @@
+evidencia,valor,fuente y lectura
+Memoria del movimiento a 1 día,0.165,E4: única autocorrelación significativa
+Memoria a 2–20 días (máx. |valor|),0.030,E4: dentro de la banda de ruido
+"R² dentro de muestra, lineal solo TRM",0.028,E9: techo de lo explicable
+"R² dentro de muestra, lineal TRM + macro",0.031,"E9: las macro suman ≈ 0,003"
+Correlación con mañana: DXY / Brent / diferencial,+0.094 / -0.056 / +0.008,E5: débiles
+Ventanas con el signo esperado: DXY / Brent,95 % / 64 %,E6: la relación con el Brent cambia de signo en el tiempo
+Memoria a 1 día con volatilidad baja / alta,0.226 / 0.137,"nb 07: cae en mercados agitados (p = 0,015)"

@@ -7,7 +7,8 @@ Principios:
 - Las funciones leer_* convierten un archivo crudo en una tabla (fecha, valor) y se usan en los notebooks.
 
 La descarga la ejecuta scripts/descargar_datos.py una sola vez; los notebooks solo leen la copia
-congelada con `leer`.
+congelada con `leer`. Aparte están los datos del artículo base (`FUENTES_ARTICULO`): los cinco pares
+de divisas que el autor publicó, para reproducir su método con sus propios datos (notebook 08b).
 """
 from __future__ import annotations
 
@@ -321,3 +322,158 @@ def leer(nombre: str) -> pd.DataFrame:
         La serie con el formato de su lector (ver `leer_sdmx`, `leer_fred`, `leer_vigencias` y `leer_dxy`).
     """
     return LECTORES[nombre](DATA_RAW / FUENTES[nombre]["archivo"])
+
+
+# ---------------------------------------------------------------------------
+# Datos del artículo base (Eslami Ghayour y Yousefi, 2023), para el notebook 08b
+# ---------------------------------------------------------------------------
+_REPO_ARTICULO = ("https://raw.githubusercontent.com/arasheslamii/"
+                  "1-Performance-comparison-of-Gradient-Boosting-algorithms-for-Forex-market-Prediction-A-Study-on-Lig/"
+                  "506912ceffde3cf998bbaf8ba27ad31572a31a93/{archivo}")   # fijado al commit del 2023-05-14
+ARTICULO_RAW = DATA_RAW / "articulo"                                    # copia congelada de esos archivos
+
+FUENTES_ARTICULO = {
+    par: {"archivo": archivo, "url": _REPO_ARTICULO.format(archivo=archivo),
+          "descripcion": f"{par}, precio de cierre diario; repositorio público del autor del artículo base"}
+    for par, archivo in [("GBP/USD", "GU.csv"), ("EUR/USD", "EU.csv"), ("AUD/USD", "AU.csv"),
+                         ("NZD/USD", "NU.csv"), ("USD/CHF", "UC.csv")]
+}   # EU-C.csv del mismo repositorio es idéntico a EU.csv y no se usa
+
+
+def descargar_articulo(nombre: str) -> bytes:
+    """Descarga un par de divisas del repositorio del autor del artículo base.
+
+    Parámetros
+    ----------
+    nombre : str
+        Clave de `FUENTES_ARTICULO`: "GBP/USD", "EUR/USD", "AUD/USD", "NZD/USD" o "USD/CHF".
+
+    Devuelve
+    --------
+    bytes
+        El CSV tal como está en el repositorio, en la versión fijada por el commit de `_REPO_ARTICULO`.
+    """
+    return _get(FUENTES_ARTICULO[nombre]["url"])
+
+
+def leer_csv_articulo(ruta: Path) -> pd.DataFrame:
+    """Convierte un CSV del repositorio del autor en una tabla (fecha, valor).
+
+    Los archivos traen las columnas ``Date`` (mes/día/año) y ``Close``; el de EUR/USD trae solo
+    ``Close``. Se conserva el orden del archivo, que es el cronológico.
+
+    Parámetros
+    ----------
+    ruta : Path
+        Archivo CSV del repositorio del autor.
+
+    Devuelve
+    --------
+    pd.DataFrame
+        Columnas ``fecha`` (NaT si el archivo no trae fechas) y ``valor`` (precio de cierre).
+
+    Lanza
+    -----
+    ValueError
+        Si el archivo no tiene la columna ``Close``.
+    """
+    df = pd.read_csv(ruta)
+    if "Close" not in df.columns:
+        raise ValueError(f"{ruta.name}: falta la columna Close")
+    fechas = pd.to_datetime(df["Date"], format="%m/%d/%Y") if "Date" in df.columns else pd.NaT
+    return pd.DataFrame({"fecha": fechas, "valor": pd.to_numeric(df["Close"], errors="coerce")})
+
+
+def guardar_articulo(nombre: str, contenido: bytes) -> dict[str, str | int | None]:
+    """Escribe un CSV del artículo en data/raw/articulo/, lo valida leyéndolo y devuelve sus metadatos.
+
+    Parámetros
+    ----------
+    nombre : str
+        Clave de `FUENTES_ARTICULO`.
+    contenido : bytes
+        Resultado de `descargar_articulo`; se escribe sin modificar.
+
+    Devuelve
+    --------
+    dict[str, str | int | None]
+        ``archivo``, ``fuente``, ``url``, ``descargado_utc``, ``md5``, ``bytes``, ``filas``,
+        ``fecha_min`` y ``fecha_max`` (None si el archivo no trae fechas).
+    """
+    ARTICULO_RAW.mkdir(parents=True, exist_ok=True)
+    ruta = ARTICULO_RAW / FUENTES_ARTICULO[nombre]["archivo"]
+    ruta.write_bytes(contenido)
+    tabla = leer_csv_articulo(ruta)
+    con_fecha = tabla["fecha"].notna().any()
+    return {
+        "archivo": ruta.name,
+        "fuente": FUENTES_ARTICULO[nombre]["descripcion"],
+        "url": FUENTES_ARTICULO[nombre]["url"],
+        "descargado_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "md5": md5(ruta),
+        "bytes": ruta.stat().st_size,
+        "filas": int(len(tabla)),
+        "fecha_min": str(tabla["fecha"].min().date()) if con_fecha else None,
+        "fecha_max": str(tabla["fecha"].max().date()) if con_fecha else None,
+    }
+
+
+def leer_articulo(nombre: str) -> pd.DataFrame:
+    """Lee la copia congelada de un par de divisas del artículo desde data/raw/articulo/.
+
+    Parámetros
+    ----------
+    nombre : str
+        Clave de `FUENTES_ARTICULO`.
+
+    Devuelve
+    --------
+    pd.DataFrame
+        Columnas ``fecha`` y ``valor`` (ver `leer_csv_articulo`).
+    """
+    return leer_csv_articulo(ARTICULO_RAW / FUENTES_ARTICULO[nombre]["archivo"])
+
+
+# ---------------------------------------------------------------------------
+# TRM en vivo (aplicación, rúbrica 8.3)
+# ---------------------------------------------------------------------------
+_SOCRATA_TRM_RECIENTE = ("https://www.datos.gov.co/resource/32sa-8pi3.json"
+                         "?$order=vigenciadesde%20DESC&$limit={n}")   # misma fuente y formato que la copia congelada
+
+
+def trm_reciente(n: int = 60, intentos: int = 2, timeout: float = 15) -> pd.DataFrame:
+    """Descarga las últimas TRM publicadas desde datos.gov.co (Superintendencia Financiera).
+
+    Es la misma fuente y el mismo formato (una fila por TRM publicada, con su vigencia) que la copia
+    congelada `trm_vigencias` con que se construyó el conjunto de entrenamiento, así que las variables
+    que se calculan con ella son idénticas a las del entrenamiento.
+
+    Parámetros
+    ----------
+    n : int, por defecto 60
+        Número de TRM recientes que se piden (la app necesita al menos 11 para los rezagos y 21
+        para la volatilidad de 20 días).
+    intentos : int, por defecto 2
+        Intentos antes de rendirse; pocos, para que la app no se quede esperando.
+    timeout : float, por defecto 15
+        Segundos máximos de cada intento.
+
+    Devuelve
+    --------
+    pd.DataFrame
+        Columnas ``fecha`` (vigencia desde), ``vigencia_hasta`` y ``valor``, en orden cronológico.
+
+    Lanza
+    -----
+    RuntimeError
+        Si la fuente no responde (lo lanza `_get`) o si la respuesta no trae las columnas esperadas.
+    """
+    import json
+    filas = json.loads(_get(_SOCRATA_TRM_RECIENTE.format(n=n), intentos=intentos, espera=1, timeout=timeout))
+    df = pd.DataFrame(filas)
+    if not {"vigenciadesde", "vigenciahasta", "valor"} <= set(df.columns):
+        raise RuntimeError("datos.gov.co devolvió una respuesta sin las columnas esperadas")
+    df = pd.DataFrame({"fecha": pd.to_datetime(df["vigenciadesde"]).dt.normalize(),
+                       "vigencia_hasta": pd.to_datetime(df["vigenciahasta"]).dt.normalize(),
+                       "valor": pd.to_numeric(df["valor"])})
+    return df.sort_values("fecha").reset_index(drop=True)

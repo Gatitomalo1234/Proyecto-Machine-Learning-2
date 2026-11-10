@@ -1,7 +1,7 @@
 """Verifica que todas las funciones del proyecto estén documentadas con la misma convención.
 
 Convención: docstrings en formato NumPy, en español, y tipos en la firma. Este script revisa los
-módulos de src/, scripts/ y reports/informe/, y las funciones definidas dentro de los notebooks.
+módulos de src/, scripts/, reports/informe/ y app/, y las funciones definidas dentro de los notebooks.
 Termina con código 1 y la lista de faltantes si encuentra alguno; con código 0 si todo cumple.
 
 Reglas que comprueba:
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 RAIZ = Path(__file__).resolve().parents[1]
-CARPETAS_PY = ["src", "scripts", "reports/informe"]          # módulos que se revisan
+CARPETAS_PY = ["src", "scripts", "reports/informe", "app"]   # módulos que se revisan
 SECCION = re.compile(r"^\s*(Parámetros|Devuelve|Lanza|Notas)\s*\n\s*-{3,}\s*$", re.MULTILINE)
 FuncionAST = ast.FunctionDef | ast.AsyncFunctionDef
 

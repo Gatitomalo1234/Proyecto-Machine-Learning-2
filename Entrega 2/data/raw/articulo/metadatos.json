@@ -1,0 +1,57 @@
+{
+  "GBP/USD": {
+    "archivo": "GU.csv",
+    "fuente": "GBP/USD, precio de cierre diario; repositorio público del autor del artículo base",
+    "url": "https://raw.githubusercontent.com/arasheslamii/1-Performance-comparison-of-Gradient-Boosting-algorithms-for-Forex-market-Prediction-A-Study-on-Lig/506912ceffde3cf998bbaf8ba27ad31572a31a93/GU.csv",
+    "descargado_utc": "2026-11-10T17:34:10+00:00",
+    "md5": "951ae1d756b76e4c1cdba413fb9ce23c",
+    "bytes": 110037,
+    "filas": 5037,
+    "fecha_min": "2003-12-01",
+    "fecha_max": "2023-04-13"
+  },
+  "EUR/USD": {
+    "archivo": "EU.csv",
+    "fuente": "EUR/USD, precio de cierre diario; repositorio público del autor del artículo base",
+    "url": "https://raw.githubusercontent.com/arasheslamii/1-Performance-comparison-of-Gradient-Boosting-algorithms-for-Forex-market-Prediction-A-Study-on-Lig/506912ceffde3cf998bbaf8ba27ad31572a31a93/EU.csv",
+    "descargado_utc": "2026-11-10T17:34:10+00:00",
+    "md5": "f9f672d28f257ec7045039e81de4be4a",
+    "bytes": 59720,
+    "filas": 5025,
+    "fecha_min": null,
+    "fecha_max": null
+  },
+  "AUD/USD": {
+    "archivo": "AU.csv",
+    "fuente": "AUD/USD, precio de cierre diario; repositorio público del autor del artículo base",
+    "url": "https://raw.githubusercontent.com/arasheslamii/1-Performance-comparison-of-Gradient-Boosting-algorithms-for-Forex-market-Prediction-A-Study-on-Lig/506912ceffde3cf998bbaf8ba27ad31572a31a93/AU.csv",
+    "descargado_utc": "2026-11-10T17:34:11+00:00",
+    "md5": "730a7794a8964bd7e1884831200051d1",
+    "bytes": 96178,
+    "filas": 4401,
+    "fecha_min": "2006-05-16",
+    "fecha_max": "2023-04-13"
+  },
+  "NZD/USD": {
+    "archivo": "NU.csv",
+    "fuente": "NZD/USD, precio de cierre diario; repositorio público del autor del artículo base",
+    "url": "https://raw.githubusercontent.com/arasheslamii/1-Performance-comparison-of-Gradient-Boosting-algorithms-for-Forex-market-Prediction-A-Study-on-Lig/506912ceffde3cf998bbaf8ba27ad31572a31a93/NU.csv",
+    "descargado_utc": "2026-11-10T17:34:11+00:00",
+    "md5": "f6a170e6c2f3fdbb5322badd9d93f0a2",
+    "bytes": 109851,
+    "filas": 5026,
+    "fecha_min": "2003-12-01",
+    "fecha_max": "2023-04-13"
+  },
+  "USD/CHF": {
+    "archivo": "UC.csv",
+    "fuente": "USD/CHF, precio de cierre diario; repositorio público del autor del artículo base",
+    "url": "https://raw.githubusercontent.com/arasheslamii/1-Performance-comparison-of-Gradient-Boosting-algorithms-for-Forex-market-Prediction-A-Study-on-Lig/506912ceffde3cf998bbaf8ba27ad31572a31a93/UC.csv",
+    "descargado_utc": "2026-11-10T17:34:11+00:00",
+    "md5": "0a3e3521f423939e912722aef0837cf8",
+    "bytes": 111012,
+    "filas": 5091,
+    "fecha_min": "2003-09-17",
+    "fecha_max": "2023-04-13"
+  }
+}
