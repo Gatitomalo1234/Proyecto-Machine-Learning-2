@@ -44,12 +44,13 @@ Entrega 2/
 │   ├── modelos.py             Espacios de búsqueda, pipelines, validación anidada, modelos finales y Optuna
 │   └── graficos.py            Estilo y guardado de figuras y tablas
 ├── scripts/descargar_datos.py Descarga y congela los datos crudos (se ejecuta una vez)
+├── scripts/verificar_documentacion.py  Comprueba que todas las funciones estén documentadas (ver "Documentación del código")
 ├── notebooks/                 Ver "Orden de ejecución"
 ├── data/raw/                  Datos crudos congelados + metadatos.json (fuente, URL, fecha, MD5)
 ├── data/processed/            series_limpias, dataset, particion, predicciones de validación y de test
 ├── models/                    modelos_finales.joblib (los 7 modelos congelados; el notebook 05 los regenera idénticos)
-├── reports/figuras/           fig01–fig06 y figE1–figE5
-├── reports/tablas/            38 tablas numeradas (tab00–tab09 y tabE1–tabE10)
+├── reports/figuras/           fig01–fig08 y figE1–figE5 (fig07–fig08: experimento de ventanas)
+├── reports/tablas/            45 tablas numeradas (tab00–tab10 y tabE1–tabE10; tab10*: experimento de ventanas)
 ├── reports/informe/           Informe de la entrega (LaTeX + PDF) y los scripts que arman sus tablas y figuras
 └── reports/guia_sustentacion.md  Guion y preguntas probables para la sustentación oral
 ```
@@ -58,12 +59,21 @@ Entrega 2/
 
 ## Instalación
 
-Python 3.11. En la carpeta `Entrega 2/`:
+Python 3.12. En la carpeta `Entrega 2/`:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+```
+
+`requirements.txt` fija las versiones exactas con las que se obtuvieron los resultados. XGBoost debe ser la 3.2.0: la versión 3.4 entrega resultados distintos para este modelo.
+
+Para ejecutar los notebooks desde la terminal con este entorno:
+
+```bash
+python -m ipykernel install --user --name trm      # una sola vez
+python -m nbconvert --to notebook --execute --inplace --ExecutePreprocessor.kernel_name=trm notebooks/01_datos_y_calidad.ipynb
 ```
 
 ## Orden de ejecución
@@ -77,8 +87,21 @@ pip install -r requirements.txt
 | 4 | `04_reproduccion_articulo.ipynb` | El método del artículo tal cual (niveles, MinMax, 80/20) dentro del desarrollo: techo de extrapolación (Figura 3) | 7.3 |
 | 5 | `05_modelos_validacion.ipynb` | Figura 2 (pipeline), línea base y 6 configuraciones con validación anidada, aporte macro, hipótesis, auditoría, congelamiento y prueba de robustez con Optuna | 7.2, 7.3, 7.4 |
 | 6 | `06_test_e_interpretacion.ipynb` | Verifica lo congelado, abre el test una sola vez (7 configuraciones + método del artículo), estabilidad, SHAP, errores por periodo, hipótesis e implicaciones | 7.4 |
+| 7 | `07_ventanas_rezago.ipynb` | Experimento pedido tras la Entrega 2: ¿más días de rezago mejoran? Compara rezagos 1, 5 y 10 con los últimos 20 días y con ventanas de tendencia y volatilidad, con la misma validación anidada y solo con el desarrollo (no abre el test). Resultado: no mejora; la memoria de la TRM es de un día y se debilita con la volatilidad | 8.1, 8.2, 8.4 |
 
 Cada notebook lee de disco lo que dejó el anterior, así que puede ejecutarse por separado. El proyecto completo corre en unos 2 minutos.
+
+## Documentación del código
+
+Todas las funciones (las 50 del proyecto: en `src/`, en los scripts y las definidas dentro de los notebooks) siguen la misma convención: docstring en formato NumPy, en español, con un resumen de una línea, el porqué cuando hay una decisión de método (fuga, reproducibilidad) y las secciones **Parámetros**, **Devuelve**, **Lanza** y **Notas** cuando aplican. En los archivos `.py` cada parámetro y cada retorno llevan tipo. Para consultar una función: `help(src.alineacion.alinear)`. `src/__init__.py` resume qué hace cada módulo y en qué notebook se usa.
+
+La convención se comprueba automáticamente:
+
+```bash
+python scripts/verificar_documentacion.py
+```
+
+El script revisa que cada módulo y cada función tengan docstring, que se documente cada parámetro, lo que se devuelve y lo que se lanza, y que haya tipos. Termina con código 1 y la lista de faltantes si algo no cumple.
 
 ## Informe
 

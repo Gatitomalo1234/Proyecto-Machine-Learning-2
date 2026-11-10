@@ -6,8 +6,14 @@ Contrato con la Entrega 1:
   (solo TRM y TRM + macro) → 6 configuraciones.
 - Validación anidada: bucle externo walk-forward (desempeño con variabilidad) y bucle interno
   TimeSeriesSplit + RandomizedSearchCV (hiperparámetros). Todo dentro de Pipeline.
+
+Los nombres de modelo válidos son "lineal", "LightGBM", "CatBoost" y "XGBoost". Todas las funciones
+reciben el conjunto de desarrollo con índice 0, 1, … y los cortes de `validacion.cortes_walk_forward`.
 """
+from __future__ import annotations
+
 import time
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -21,6 +27,9 @@ from xgboost import XGBRegressor
 
 from .config import GAP, N_BUSQUEDA, N_CORTES_INTERNOS, SEMILLA
 from .validacion import metricas
+
+if TYPE_CHECKING:
+    import optuna
 
 # ---------------------------------------------------------------------------
 # Espacios de búsqueda (Tabla 4). La señal es débil (EDA, E9): se favorecen árboles poco
@@ -67,8 +76,30 @@ JUSTIFICACION_ESPACIOS = {
 }
 
 
-def crear_modelo(nombre):
-    """Pipeline de cada modelo. Hilos = 1 para que el resultado sea idéntico en cada corrida."""
+def crear_modelo(nombre: str) -> Pipeline:
+    """Crea el Pipeline sin ajustar de un modelo. Hilos = 1 para que el resultado sea idéntico en cada corrida.
+
+    Parámetros
+    ----------
+    nombre : str
+        "lineal", "LightGBM", "CatBoost" o "XGBoost"; otro nombre produce KeyError.
+
+    Devuelve
+    --------
+    sklearn.pipeline.Pipeline
+        Para "lineal": ``escala`` (StandardScaler) → ``modelo`` (LinearRegression); el escalador
+        queda dentro del Pipeline para que aprenda solo del entrenamiento de cada corte.
+        Para los boosting: un único paso ``modelo``, sin escalado (los árboles no lo necesitan).
+        El nombre del paso da el prefijo ``modelo__`` que usan los espacios de `ESPACIOS`.
+
+    Notas
+    -----
+    Todos usan la semilla `SEMILLA` y un solo hilo, porque con varios hilos el orden de las sumas
+    cambia y los resultados varían en los últimos decimales. En LightGBM, ``subsample_freq=1`` hace
+    que el submuestreo de filas se aplique en cada árbol; en CatBoost, ``bootstrap_type="Bernoulli"``
+    fija un submuestreo simple (cada día entra con probabilidad ``subsample``), igual al de los otros
+    dos, y ``allow_writing_files=False`` evita la carpeta catboost_info/.
+    """
     if nombre == "lineal":
         return Pipeline([("escala", StandardScaler()), ("modelo", LinearRegression())])
     base = {
@@ -80,17 +111,59 @@ def crear_modelo(nombre):
     return Pipeline([("modelo", base)])      # los árboles no necesitan escalado
 
 
-def busqueda(nombre, n_jobs=-1):
-    """Bucle interno: RandomizedSearchCV con TimeSeriesSplit (validación siempre posterior)."""
+def busqueda(nombre: str, n_jobs: int = -1) -> RandomizedSearchCV:
+    """Crea el bucle interno de la validación anidada: RandomizedSearchCV con TimeSeriesSplit (validación siempre posterior).
+
+    Parámetros
+    ----------
+    nombre : str
+        "LightGBM", "CatBoost" o "XGBoost" (la regresión lineal no tiene hiperparámetros).
+    n_jobs : int, por defecto -1
+        Procesos para evaluar combinaciones en paralelo (-1 = todos los núcleos). El resultado no
+        cambia, porque cada modelo usa un solo hilo.
+
+    Devuelve
+    --------
+    sklearn.model_selection.RandomizedSearchCV
+        Búsqueda sin ajustar: `N_BUSQUEDA` (15) combinaciones al azar de `ESPACIOS[nombre]` con
+        semilla `SEMILLA`, cada una evaluada con ``TimeSeriesSplit(N_CORTES_INTERNOS, gap=GAP)``
+        por error cuadrático medio sobre retornos; al ajustarla, reentrena la mejor con todo lo recibido.
+    """
     return RandomizedSearchCV(
         crear_modelo(nombre), ESPACIOS[nombre], n_iter=N_BUSQUEDA,
         cv=TimeSeriesSplit(n_splits=N_CORTES_INTERNOS, gap=GAP),
         scoring="neg_mean_squared_error", random_state=SEMILLA, n_jobs=n_jobs, refit=True)
 
 
-def evaluar_walk_forward(datos, variables, nombre, cortes, n_jobs=-1):
-    """Bucle externo: para cada corte ajusta (y, si es boosting, busca hiperparámetros) solo con su
-    entrenamiento y mide en su validación. Devuelve métricas por corte, predicciones e hiperparámetros."""
+def evaluar_walk_forward(datos: pd.DataFrame, variables: list[str], nombre: str,
+                         cortes: list[tuple[np.ndarray, np.ndarray]],
+                         n_jobs: int = -1) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Evalúa un modelo con el bucle externo de la validación anidada (walk-forward).
+
+    Para cada corte ajusta el modelo (y, si es boosting, busca sus hiperparámetros con `busqueda`)
+    solo con el entrenamiento de ese corte, y mide en su validación. Así los hiperparámetros nunca
+    se eligen con los datos con que se mide el error.
+
+    Parámetros
+    ----------
+    datos : pd.DataFrame
+        Conjunto de desarrollo con índice 0, 1, …; columnas ``fecha``, ``trm``, ``y`` y `variables`.
+    variables : list[str]
+        Columnas que usa el modelo (``cfg.VARS_TRM`` o ``cfg.VARS_TODAS``).
+    nombre : str
+        "lineal", "LightGBM", "CatBoost" o "XGBoost".
+    cortes : list[tuple[np.ndarray, np.ndarray]]
+        Resultado de `validacion.cortes_walk_forward` (posiciones de entrenamiento y validación).
+    n_jobs : int, por defecto -1
+        Se pasa a `busqueda`.
+
+    Devuelve
+    --------
+    tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+        1. Métricas por corte: ``corte``, ``rmse_pesos``, ``mae_pesos``, ``r2_retornos`` y ``segundos``.
+        2. Predicciones: ``corte``, ``fecha``, ``y`` (real) y ``yhat`` (predicho), una fila por día validado.
+        3. Hiperparámetros elegidos en cada corte, sin el prefijo ``modelo__`` (solo ``corte`` para la lineal).
+    """
     filas, preds, params = [], [], []
     X, y, trm = datos[variables], datos["y"], datos["trm"]
     for i, (tr, va) in enumerate(cortes, start=1):
@@ -109,8 +182,28 @@ def evaluar_walk_forward(datos, variables, nombre, cortes, n_jobs=-1):
     return pd.DataFrame(filas), pd.concat(preds, ignore_index=True), pd.DataFrame(params)
 
 
-def ajustar_final(datos, variables, nombre, n_jobs=-1):
-    """Modelo final con TODO el desarrollo: repite la búsqueda interna sobre el desarrollo completo."""
+def ajustar_final(datos: pd.DataFrame, variables: list[str], nombre: str,
+                  n_jobs: int = -1) -> tuple[Pipeline, dict[str, object]]:
+    """Ajusta el modelo final con TODO el desarrollo: repite la búsqueda interna sobre el desarrollo completo.
+
+    Se usa una sola vez por configuración, para congelar los modelos que el notebook 06 evalúa en el test.
+
+    Parámetros
+    ----------
+    datos : pd.DataFrame
+        Conjunto de desarrollo completo, con la columna ``y`` y `variables`.
+    variables : list[str]
+        Columnas que usa el modelo.
+    nombre : str
+        "lineal", "LightGBM", "CatBoost" o "XGBoost".
+    n_jobs : int, por defecto -1
+        Se pasa a `busqueda`.
+
+    Devuelve
+    --------
+    tuple[Pipeline, dict[str, object]]
+        El Pipeline ajustado y sus hiperparámetros sin el prefijo ``modelo__`` (vacío para la lineal).
+    """
     X, y = datos[variables], datos["y"]
     if nombre == "lineal":
         return crear_modelo("lineal").fit(X, y), {}
@@ -123,8 +216,32 @@ def ajustar_final(datos, variables, nombre, n_jobs=-1):
 # Usa EXACTAMENTE los mismos valores posibles que ESPACIOS, para que lo único que cambie sea
 # la estrategia de búsqueda (aleatoria frente a bayesiana).
 # ---------------------------------------------------------------------------
-def busqueda_optuna(nombre, X, y, n_trials, semilla=SEMILLA):
-    """Bucle interno con Optuna: minimiza el error cuadrático medio en TimeSeriesSplit(3, gap 5)."""
+def busqueda_optuna(nombre: str, X: pd.DataFrame, y: pd.Series, n_trials: int,
+                    semilla: int = SEMILLA) -> tuple[Pipeline, dict[str, object]]:
+    """Busca hiperparámetros con Optuna en el bucle interno: minimiza el error cuadrático medio en TimeSeriesSplit(3, gap 5).
+
+    El muestreador TPE propone cada combinación a partir de los intentos anteriores, en lugar de al
+    azar. Solo se usa como prueba de robustez (Tabla 6); los modelos congelados salen de `busqueda`.
+
+    Parámetros
+    ----------
+    nombre : str
+        "LightGBM", "CatBoost" o "XGBoost".
+    X : pd.DataFrame
+        Variables del entrenamiento del corte, en orden temporal (los cortes internos son por posición).
+    y : pd.Series
+        Objetivo alineado con `X`.
+    n_trials : int
+        Número de combinaciones que prueba Optuna (en el proyecto, 15 y 50).
+    semilla : int, por defecto `SEMILLA`
+        Semilla del muestreador TPE.
+
+    Devuelve
+    --------
+    tuple[Pipeline, dict[str, object]]
+        El Pipeline con la mejor combinación reentrenado con todo `X`, y esa combinación sin el
+        prefijo ``modelo__``.
+    """
     import optuna
     from sklearn.base import clone
     from sklearn.metrics import mean_squared_error
@@ -132,7 +249,19 @@ def busqueda_optuna(nombre, X, y, n_trials, semilla=SEMILLA):
     cv = list(TimeSeriesSplit(n_splits=N_CORTES_INTERNOS, gap=GAP).split(X))
     espacio = ESPACIOS[nombre]
 
-    def objetivo(trial):
+    def objetivo(trial: optuna.trial.Trial) -> float:
+        """Evalúa una combinación propuesta por Optuna.
+
+        Parámetros
+        ----------
+        trial : optuna.trial.Trial
+            Intento de Optuna; elige un valor de cada lista de `ESPACIOS[nombre]`.
+
+        Devuelve
+        --------
+        float
+            Error cuadrático medio de los 3 cortes internos (lo que Optuna minimiza).
+        """
         params = {k: trial.suggest_categorical(k.replace("modelo__", ""), v) for k, v in espacio.items()}
         errores = []
         for tr, va in cv:
@@ -147,8 +276,28 @@ def busqueda_optuna(nombre, X, y, n_trials, semilla=SEMILLA):
     return clone(crear_modelo(nombre)).set_params(**mejores).fit(X, y), estudio.best_params
 
 
-def evaluar_walk_forward_optuna(datos, variables, nombre, cortes, n_trials):
-    """Mismo bucle externo que evaluar_walk_forward, con Optuna en el bucle interno."""
+def evaluar_walk_forward_optuna(datos: pd.DataFrame, variables: list[str], nombre: str,
+                                cortes: list[tuple[np.ndarray, np.ndarray]], n_trials: int) -> pd.DataFrame:
+    """Evalúa un boosting con el mismo bucle externo que `evaluar_walk_forward`, pero con Optuna en el bucle interno.
+
+    Parámetros
+    ----------
+    datos : pd.DataFrame
+        Conjunto de desarrollo con índice 0, 1, …; columnas ``trm``, ``y`` y `variables`.
+    variables : list[str]
+        Columnas que usa el modelo.
+    nombre : str
+        "LightGBM", "CatBoost" o "XGBoost".
+    cortes : list[tuple[np.ndarray, np.ndarray]]
+        Los mismos cortes que en `evaluar_walk_forward`, para que la comparación sea justa.
+    n_trials : int
+        Se pasa a `busqueda_optuna`.
+
+    Devuelve
+    --------
+    pd.DataFrame
+        Una fila por corte con ``corte``, ``rmse_pesos``, ``mae_pesos`` y ``r2_retornos``.
+    """
     X, y, trm = datos[variables], datos["y"], datos["trm"]
     filas = []
     for i, (tr, va) in enumerate(cortes, start=1):

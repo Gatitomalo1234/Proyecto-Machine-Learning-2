@@ -7,6 +7,8 @@ Uso (desde la carpeta Entrega 2/):
 Deja en data/raw/ los archivos tal como llegan de cada fuente y un metadatos.json con
 la fuente, la URL, el momento de descarga, la huella MD5, el número de filas y el rango de fechas.
 """
+from __future__ import annotations
+
 import argparse
 import json
 import sys
@@ -20,7 +22,20 @@ from src.descarga import FUENTES, descargar, guardar, md5   # noqa: E402
 RUTA_META = DATA_RAW / "metadatos.json"
 
 
-def main():
+def main() -> None:
+    """Descarga las series que falten, verifica las ya congeladas y actualiza metadatos.json.
+
+    Para cada fuente de `FUENTES`: si el archivo ya existe y está registrado en los metadatos, solo
+    comprueba que su MD5 no haya cambiado; si no, lo descarga, lo valida y registra sus metadatos.
+    Con ``--forzar`` vuelve a descargar todo, lo que cambia la copia congelada y obliga a re-ejecutar
+    los notebooks.
+
+    Lanza
+    -----
+    RuntimeError
+        Si un archivo congelado no coincide con su MD5 registrado (alguien lo modificó), o si una
+        descarga falla después de todos los reintentos.
+    """
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--forzar", action="store_true", help="volver a descargar aunque exista la copia congelada")
     args = parser.parse_args()

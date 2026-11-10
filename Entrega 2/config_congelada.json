@@ -1,11 +1,11 @@
 {
-  "md5_contenido": "0e4e09244ce880576a14400d9d91e75c",
+  "md5_contenido": "580c4f306e227c6c677ede6291b6eef2",
   "semilla": 42,
   "periodo": [
     "2003-12-01",
     "2026-09-29"
   ],
-  "md5_dataset": "2654c2770795de2083ca13733515d49c",
+  "md5_dataset": "38929ed82d75910fba7bb526ab3d16f2",
   "particion": {
     "fraccion_test": 0.2,
     "filas_desarrollo": 4320,

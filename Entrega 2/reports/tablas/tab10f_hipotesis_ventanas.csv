@@ -1,0 +1,4 @@
+hipotesis,enunciado,evidencia
+H7,Los movimientos de los días 2 a 20 no mejoran a ningún algoritmo,"lineal: no mejora (0/5, -0.527), LightGBM: no mejora (1/5, -0.095), CatBoost: no mejora (0/5, -0.138), XGBoost: mejora inestable (2/5, -0.097)"
+H8 + H9,"Las ventanas (tendencia y volatilidad) no mejoran de forma confiable; si algo aporta, es la volatilidad","lineal: no mejora (1/5, -0.054), LightGBM: mejora inestable (3/5, +0.005), CatBoost: no mejora (1/5, -0.353), XGBoost: no mejora (1/5, -0.100). SHAP de LightGBM: volatilidad 11 %, tendencia 25 %"
+H9 (mecanismo),La memoria de un día se debilita cuando la volatilidad es alta,"Correlación hoy–mañana: baja 0.226, media 0.227, alta 0.137"

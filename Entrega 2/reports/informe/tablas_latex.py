@@ -1,8 +1,13 @@
 """Genera las tablas numéricas del informe directamente desde reports/tablas/*.csv.
 
 Así las cifras del informe coinciden por construcción con las salidas de los notebooks.
+Escribe en reports/informe/tablas/: tabla1_calidad.tex (Tabla 1), tabla4_resultados.tex (resultados
+de validación y test), tabla_hiperparametros.tex y tabla_robustez.tex. Se ejecuta después de los
+notebooks y antes de compilar el informe.
 Uso: python reports/informe/tablas_latex.py
 """
+from __future__ import annotations
+
 from pathlib import Path
 
 import pandas as pd
@@ -13,14 +18,40 @@ SALIDA = AQUI / "tablas"
 SALIDA.mkdir(exist_ok=True)
 
 
-def num(x, d=2):
-    """Número con coma decimal y punto de miles (formato del informe)."""
+def num(x: float, d: int = 2) -> str:
+    """Escribe un número con coma decimal y punto de miles (formato del informe): 4153.91 → "4.153,91".
+
+    Parámetros
+    ----------
+    x : float
+        Número que se escribe.
+    d : int, por defecto 2
+        Número de decimales.
+
+    Devuelve
+    --------
+    str
+        El número formateado; si es negativo, el signo va como ``$-$`` para que LaTeX lo escriba
+        como un menos y no como un guion.
+    """
     s = f"{x:,.{d}f}"
     s = s.replace(",", "X").replace(".", ",").replace("X", ".")
     return "$-$" + s[1:] if s.startswith("-") else s
 
 
-def fecha(s):
+def fecha(s: str) -> str:
+    """Escribe una fecha como mes abreviado y año: "2003-12-01" → "dic 2003".
+
+    Parámetros
+    ----------
+    s : str
+        Fecha en formato ``AAAA-MM-DD`` (como queda en los CSV de reports/tablas/).
+
+    Devuelve
+    --------
+    str
+        Mes en español de tres letras, un espacio y el año.
+    """
     a, m, _ = str(s).split("-")
     meses = "ene feb mar abr may jun jul ago sep oct nov dic".split()
     return f"{meses[int(m) - 1]} {a}"
@@ -102,13 +133,45 @@ FILAS = [
 ]
 
 
-def corto(x):
-    """0.03 → 0,03; 200.0 → 200."""
+def corto(x: float | str) -> str:
+    """Escribe un hiperparámetro en forma corta, con coma decimal: 0.03 → "0,03"; 200.0 → "200".
+
+    Parámetros
+    ----------
+    x : float o str
+        Valor del hiperparámetro (de config_congelada.json o de tab04b_espacios_busqueda.csv).
+
+    Devuelve
+    --------
+    str
+        Entero sin decimales si el valor es entero; si no, el número con coma decimal.
+    """
     x = float(x)
     return str(int(x)) if x.is_integer() else str(x).replace(".", ",")
 
 
-def posibles(mapa):
+def posibles(mapa: dict[str, str]) -> str:
+    """Escribe la celda "Valores posibles" de un hiperparámetro en la tabla de hiperparámetros.
+
+    Si los tres algoritmos comparten los mismos valores, los escribe una vez; si no, escribe los de
+    LightGBM y, entre paréntesis, los de los algoritmos que difieren (p. ej. el peso mínimo por hoja
+    de XGBoost).
+
+    Parámetros
+    ----------
+    mapa : dict[str, str]
+        Algoritmo → nombre del hiperparámetro en ese algoritmo (una fila de `FILAS`).
+
+    Devuelve
+    --------
+    str
+        Valores separados por punto y coma, con coma decimal.
+
+    Notas
+    -----
+    Lee los valores posibles de la tabla global `esp` (tab04b_espacios_busqueda.csv), que el script
+    carga antes de definir esta función.
+    """
     vals = {a: ast.literal_eval(esp.loc[p, a]) for a, p in mapa.items()}
     distintos = {tuple(v) for v in vals.values()}
     fmt = lambda v: "; ".join(corto(x) for x in v)
