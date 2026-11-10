@@ -1,0 +1,13 @@
+afirmacion,se_puede_afirmar,evidencia
+"A un día, el petróleo, el dólar global y el diferencial de tasas no mejoran la predicción de la TRM",Sí,"Ninguna versión con macro predice mejor que la misma sin ellas (Diebold-Mariano en validación, p de 0,12 a 0,95); en el test empeoran (nb 06, 08)"
+Ningún boosting predice mejor que una regresión lineal sobre los movimientos de la TRM,Sí,"p de 0,32 a 0,82 en validación; en el test, p = 0,90 (nb 08)"
+La TRM tiene una memoria de un día pequeña pero real,Sí,"Mañana repite cerca del 17–20 % del movimiento de hoy; el modelo le gana a 'mañana igual que hoy' por 0,39 pesos por dólar, p = 0,002 (parte 3)"
+"El método del artículo, aplicado tal cual, no sirve para la TRM, y su R² en nivel no mide capacidad de predecir",Sí,"Techo de extrapolación (nb 04); con sus propios datos, su R² no supera a copiar el precio de hoy (nb 08b)"
+"Todo lo anterior vale para 2003–2026 y para un solo periodo de test (2022–2026), agitado y ya abierto en la Entrega 2",Con cautela,"Un periodo distinto podría mover las diferencias de centavos; la conclusión de fondo (no hay señal macro a un día) se repite en validación, test y nb 07"
+La forma en S y la asimetría del efecto (techo de +35 pb al subir y −24 pb al bajar),Con cautela,"El techo se forma con los pocos días de movimientos de más de ~1,5 % (63 días de 4.320 en el desarrollo superan el 1,9 %) (parte 1)"
+El diferencial de tasas daña por un cambio de régimen,Con cautela,"Sus valores altos solo ocurrieron en 2008–2009 dentro del desarrollo; con más episodios, su relación con la TRM podría estabilizarse (nb 08)"
+"Que el petróleo, el dólar global o las tasas no afecten la TRM",No,"La conclusión es predictiva y a un día, no causal: esas variables pueden moverse junto con la TRM el mismo día o pesar en semanas o meses; lo que no hacen es anticipar el movimiento de mañana con el dato de hoy"
+"Conclusiones para horizontes de semanas o meses, o para movimientos dentro del día",No,Solo se evaluó el día siguiente (horizonte de la Entrega 1)
+Que el boosting no sirva para predecir divisas,No,"Aquí no hay señal no lineal que aprovechar (EDA E9); con otras variables, horizontes o datos de mayor frecuencia, el resultado podría ser distinto"
+Que el modelo sirva para elegir el día de compra,No,"Acierta la dirección el 55 % de los días, no más que decir siempre lo más frecuente (p = 0,16) (parte 3)"
+"Que funcione igual en regímenes que no están en los datos (p. ej., controles cambiarios o una crisis distinta)",No,El modelo solo conoce 2003–2026; el semáforo de la aplicación avisa cuando los datos salen de lo visto
