@@ -1,0 +1,5 @@
+tecnica,por_que_y_cuando
+"Redes recurrentes (LSTM, GRU) y convolucionales temporales",Aprenden patrones en secuencias largas y multivariadas sin definir rezagos a mano
+Temporal Fusion Transformer,Combina variables pasadas y conocidas a futuro; su atención es interpretable y entrega intervalos
+Pronóstico probabilístico (p. ej. DeepAR),Estima toda la distribución de la TRM de mañana: conecta con M1
+Expectativa honesta,"Con la señal actual (≈ 3 % explicable a un día), más complejidad no tiene qué aprender; tendría sentido con datos intradía o más variables (M4) y se evaluaría con el mismo protocolo (validación anidada y Diebold-Mariano frente a la lineal)"

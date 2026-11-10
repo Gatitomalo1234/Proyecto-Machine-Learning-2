@@ -136,3 +136,32 @@ def test_trm_en_vivo_coincide_con_la_copia(copia: pd.DataFrame) -> None:
     assert (comun["valor_vivo"] == comun["valor_copia"]).all()
     assert (comun["vigencia_hasta_vivo"] == comun["vigencia_hasta_copia"]).all()
     assert vivo["fecha"].is_monotonic_increasing and not vivo["fecha"].duplicated().any()
+
+
+def test_rango_adaptativo_se_ensancha_con_la_volatilidad(copia: pd.DataFrame, modelos: dict) -> None:
+    """Con la misma TRM de hoy, el rango adaptativo es más ancho tras un periodo agitado que tras uno tranquilo."""
+    error = p.errores_historicos()
+    vol = np.log(copia["valor"]).diff().rolling(p.VENTANA_RANGO).std()
+    tranquilo = copia["valor"].iloc[: int(vol.iloc[100:].idxmin()) + 1].tail(60)
+    agitado = copia["valor"].iloc[: int(vol.iloc[100:].idxmax()) + 1].tail(60)
+    ancho = lambda serie: (lambda f: (f["trm_max_80"] - f["trm_min_80"]) / f["trm_hoy"])(p.predecir(modelos, serie, error).loc[p.MODELO_FINAL])
+    assert p.predecir(modelos, tranquilo, error).loc[p.MODELO_FINAL, "rango"] == "adaptativo"
+    assert ancho(agitado) > 2 * ancho(tranquilo)
+
+
+def test_rango_fijo_con_historia_corta(copia: pd.DataFrame, modelos: dict) -> None:
+    """Con menos de 41 TRM no se puede medir la volatilidad de 40 TRM y se usa el rango fijo."""
+    pred = p.predecir(modelos, copia["valor"].tail(p.MIN_HISTORIA), p.errores_historicos())
+    assert (pred["rango"] == "fijo").all()
+
+
+def test_verificacion_tolera_diferencias_minimas(tmp_path, modelos: dict) -> None:
+    """Una diferencia del orden de 1e-12 (otro procesador) no detiene la carga; una de verdad, sí."""
+    import json
+    from src.config import MODELOS
+    control = json.loads((MODELOS / "modelo_final.json").read_text(encoding="utf-8"))["modelo_despliegue"]["predicciones_control"]
+    X = p.datos_entrenamiento()[cfg.VARS_TRM].iloc[control["posiciones"]]
+    for nombre, modelo in modelos.items():
+        diferencia = np.max(np.abs(modelo.predict(X) - np.array(control[nombre])))
+        assert diferencia <= p.TOLERANCIA_CONTROL
+        assert p.TOLERANCIA_CONTROL < 1e-6                      # una predicción típica es del orden de 1e-3

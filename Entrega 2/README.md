@@ -48,14 +48,15 @@ Entrega 2/
 ├── notebooks/                 Ver "Orden de ejecución"
 ├── data/raw/                  Datos crudos congelados + metadatos.json (fuente, URL, fecha, MD5)
 ├── data/raw/articulo/         Datos del artículo base (5 pares de divisas del repositorio del autor) + metadatos.json
+├── data/raw/monitoreo/        TRM descargadas el 10/11/2026 para evaluar el modelo en días nuevos (notebook 10) + metadatos.json
 ├── data/processed/            series_limpias, dataset, particion, predicciones de validación y de test
 ├── app/                       Aplicación Streamlit (app.py, estilo.py, README.md, requirements.txt): ver app/README.md
-├── tests/                     Pruebas automáticas (pytest) del núcleo de la app y de la app
+├── tests/                     14 pruebas automáticas (pytest) del núcleo de la app y de la app
 ├── models/                    modelos_finales.joblib (los 7 modelos congelados; el notebook 05 los regenera idénticos);
 │                              modelo_final_despliegue.joblib (modelo final + línea base con 2003–2026, para la app);
 │                              ficha_modelo_final.md y modelo_final.json (configuración definitiva)
-├── reports/figuras/           fig01–fig14 y figE1–figE5 (fig07–08: ventanas; fig09–10: modelo final y diferencial; fig11: artículo frente a la TRM; fig12–14: interpretación)
-├── reports/tablas/            66 tablas numeradas (tab00–tab15 y tabE1–tabE10; tab10*: ventanas; tab11–12*, tab14*: modelo final; tab13*: datos del artículo; tab15*: interpretación)
+├── reports/figuras/           fig01–fig16 y figE1–figE5 (fig07–08: ventanas; fig09–10: modelo final y diferencial; fig11: artículo frente a la TRM; fig12–14: interpretación; fig15–16: rango adaptativo y monitoreo)
+├── reports/tablas/            74 tablas numeradas (tab00–tab16 y tabE1–tabE10; tab10*: ventanas; tab11–12*, tab14*: modelo final; tab13*: datos del artículo; tab15*: interpretación; tab16*: limitaciones y proyección)
 ├── reports/informe/           Informe de la entrega (LaTeX + PDF) y los scripts que arman sus tablas y figuras
 └── reports/guia_sustentacion.md  Guion y preguntas probables para la sustentación oral
 ```
@@ -96,6 +97,7 @@ python -m nbconvert --to notebook --execute --inplace --ExecutePreprocessor.kern
 | 8b | `08b_articulo_datos_originales.ipynb` | ¿Por qué al artículo "le funciona"? Descarga y congela sus datos (5 pares), revisa su calidad (7 picos erróneos), aplica su método tal cual (recupera sus R² y, con la TRM, la Tabla 4) frente a copiar el precio de hoy, y la corrección a retornos. Resultado: su R² no supera a copiar el precio; sus monedas no salen del rango de entrenamiento; en retornos, la TRM es la más predecible | 8.1 |
 | 8 | `08_modelo_final.ipynb` | Respuesta a la pregunta con pruebas formales (Diebold-Mariano y bootstrap en validación), modelo final, por qué no funcionó con la TRM (señal y diferencial: régimen de 2008–2009, dependencia parcial y modelo sin diferencial), contraste con el artículo, evaluación en el test (solo reporte), ficha del modelo y modelo reentrenado para la app | 8.1 |
 | 9 | `09_interpretacion.ipynb` | Interpretación del modelo final (SHAP y dependencia parcial): el movimiento de hoy pesa el 82 % y su efecto tiene forma de S con techo (+35 / −24 pb); cuatro días explicados con una regla fija; tipos de error (dirección casi al azar, el 10 % de días grandes produce la mitad del error, el rango del 80 % se queda corto con volatilidad alta); qué significa para un importador (error típico COP 2,7 millones en USD 100.000) y alcance de las conclusiones | 8.2 |
+| 10 | `10_limitaciones_y_proyeccion.ipynb` | Limitaciones con su evidencia (datos, simulación, sobreajuste, estabilidad, generalización, método); M1: rango del 80 % que se ensancha con la volatilidad de 40 TRM (ventana elegida con la validación; cobertura en el test del 71 % al 80 %), llevado a la app; M2: monitoreo con las TRM nuevas posteriores al 26/09/2026 (congeladas en `data/raw/monitoreo/`); mejoras propuestas y proyección a Deep Learning y MLOps | 8.4 |
 
 Cada notebook lee de disco lo que dejó el anterior, así que puede ejecutarse por separado. **El 08b va antes del 08**, porque la parte 3 del 08 usa sus tablas. El proyecto completo corre en unos 5 minutos.
 

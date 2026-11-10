@@ -1,0 +1,7 @@
+id,mejora,responde_a,estado
+M1,Rango del 80 % que se ensancha con la volatilidad (conformal adaptativo),Cobertura del rango fijo: 67 % con volatilidad alta,Probada (sección 2) y llevada a la aplicación
+M2,Monitoreo con datos nuevos,El test ya se había abierto y reutilizado,Probada (sección 3); repetirla periódicamente
+M3,Integración continua: pruebas y verificador de documentación en cada cambio del repositorio,"Reproducibilidad a futuro (p. ej., el cambio de versión de xgboost alteró resultados)","Propuesta (requiere un servicio externo, p. ej. GitHub Actions)"
+M4,"Variables con información del mismo día: cierre del mercado colombiano, VIX, peso mexicano y otras monedas emergentes, puntos forward, intervenciones del Banrep",Variables limitadas al contrato de la Entrega 1,Propuesta (cambia la pregunta)
+M5,"Predecir el tamaño del movimiento (volatilidad, ln|r|) como problema complementario","La dirección no es predecible; el riesgo sí (memoria de 0,22; R² fuera de muestra ≈ 0,14 en una exploración)",Propuesta
+M6,"Horizontes de semanas o meses e indicadores de régimen (inflación, ciclo de tasas)",Solo horizonte de un día; régimen del diferencial,Propuesta

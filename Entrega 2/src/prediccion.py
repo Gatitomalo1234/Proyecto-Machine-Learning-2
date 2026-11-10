@@ -31,6 +31,8 @@ MODELO_FINAL = "CatBoost · solo_trm"
 LINEA_BASE = "Línea base (lineal)"
 MIN_HISTORIA = 11                     # TRM necesarias para el rezago de 10 días (TRM_t … TRM_{t-10})
 VENTANA_VOLATILIDAD = 20              # TRM para medir el régimen de volatilidad (notebook 07)
+VENTANA_RANGO = 40                    # TRM para escalar el rango del 80 % (elegida solo con la validación, notebook 10)
+TOLERANCIA_CONTROL = 1e-9             # diferencia máxima admitida en las predicciones de control (retorno)
 
 
 def obtener_trm(n: int = 60) -> tuple[pd.DataFrame, str, str | None]:
@@ -117,7 +119,10 @@ def cargar_modelos(ruta: Path | None = None, verificar: bool = True) -> dict[str
     ruta : Path o None, por defecto None
         Archivo .joblib; con None, ``models/modelo_final_despliegue.joblib``.
     verificar : bool, por defecto True
-        Si es True, compara la huella de cada modelo con la de ``models/modelo_final.json``.
+        Si es True, compara las predicciones de cada modelo en 25 días de control con las guardadas en
+        ``models/modelo_final.json``, con tolerancia `TOLERANCIA_CONTROL`. Se usa tolerancia y no el MD5
+        exacto porque otro sistema operativo o procesador puede cambiar el último decimal sin que el
+        modelo cambie (p. ej. Streamlit Community Cloud corre en Linux).
 
     Devuelve
     --------
@@ -127,16 +132,16 @@ def cargar_modelos(ruta: Path | None = None, verificar: bool = True) -> dict[str
     Lanza
     -----
     ValueError
-        Si la huella de algún modelo no coincide (el archivo no es el modelo documentado).
+        Si las predicciones de control de algún modelo no coinciden (el archivo no es el modelo documentado).
     """
     import joblib
     modelos = joblib.load(ruta or MODELOS / "modelo_final_despliegue.joblib")
     if verificar:
-        esperadas = json.loads((MODELOS / "modelo_final.json").read_text(encoding="utf-8"))["modelo_despliegue"]["huella"]
-        X = datos_entrenamiento()[VARS_TRM]
+        control = json.loads((MODELOS / "modelo_final.json").read_text(encoding="utf-8"))["modelo_despliegue"]["predicciones_control"]
+        X = datos_entrenamiento()[VARS_TRM].iloc[control["posiciones"]]
         for nombre, modelo in modelos.items():
-            if huella(modelo, X) != esperadas[nombre]:
-                raise ValueError(f"{nombre}: la huella no coincide con models/modelo_final.json")
+            if nombre not in control or np.max(np.abs(modelo.predict(X) - np.array(control[nombre]))) > TOLERANCIA_CONTROL:
+                raise ValueError(f"{nombre}: la huella (predicciones de control) no coincide con models/modelo_final.json")
     return modelos
 
 
@@ -151,15 +156,28 @@ def errores_historicos(modelo: str = MODELO_FINAL) -> dict[str, float]:
     Devuelve
     --------
     dict[str, float]
-        ``mae_pesos``, ``rmse_pesos`` y los percentiles 10 y 90 del error en retorno
-        (``p10_retorno``, ``p90_retorno``): 8 de cada 10 días el error cayó entre ellos.
+        ``mae_pesos`` y ``rmse_pesos`` del test; los percentiles 10 y 90 del error en retorno en el test
+        (``p10_retorno``, ``p90_retorno``, rango fijo); y los percentiles 10 y 90 del error dividido por la
+        volatilidad de las últimas `VENTANA_RANGO` TRM (``z10``, ``z90``, rango adaptativo), calculados
+        con todos los errores fuera de muestra del modelo (validación 2006–2022 y test 2022–2026).
+
+    Notas
+    -----
+    El rango adaptativo (notebook 10) se ensancha cuando el mercado está agitado: con el rango fijo, la
+    TRM real cayó dentro solo el 67 % de los días de volatilidad alta del test; con el adaptativo, el
+    80 %. La ventana de 40 TRM se eligió solo con la validación.
     """
     from .validacion import errores_en_pesos
-    t = pd.read_csv(DATA_PROC / "predicciones_test.csv")
+    t = pd.read_csv(DATA_PROC / "predicciones_test.csv", parse_dates=["fecha"])
     e_ret = t["y"] - t[modelo]
     e_pesos = errores_en_pesos(t["y"], t[modelo], t["trm"])
+    v = pd.read_csv(DATA_PROC / "predicciones_validacion.csv", parse_dates=["fecha"])
+    v = v[v["modelo"] == modelo]
+    vol = datos_entrenamiento().set_index("fecha")["r_trm_l1"].rolling(VENTANA_RANGO).std()
+    z = pd.concat([(v["y"] - v["yhat"]) / v["fecha"].map(vol), e_ret / t["fecha"].map(vol)]).dropna()
     return {"mae_pesos": float(np.mean(np.abs(e_pesos))), "rmse_pesos": float(np.sqrt(np.mean(e_pesos ** 2))),
-            "p10_retorno": float(np.quantile(e_ret, 0.10)), "p90_retorno": float(np.quantile(e_ret, 0.90))}
+            "p10_retorno": float(np.quantile(e_ret, 0.10)), "p90_retorno": float(np.quantile(e_ret, 0.90)),
+            "z10": float(np.quantile(z, 0.10)), "z90": float(np.quantile(z, 0.90))}
 
 
 def predecir(modelos: dict[str, Pipeline], trm: pd.Series, error: dict[str, float] | None = None) -> pd.DataFrame:
@@ -172,13 +190,16 @@ def predecir(modelos: dict[str, Pipeline], trm: pd.Series, error: dict[str, floa
     trm : pd.Series
         TRM publicadas en orden cronológico; se usa la última como "hoy" (al menos `MIN_HISTORIA`).
     error : dict[str, float] o None, por defecto None
-        Resultado de `errores_historicos`; si se da, se agrega el rango del 80 % para cada modelo.
+        Resultado de `errores_historicos`; si se da, se agrega el rango del 80 % para cada modelo:
+        adaptativo (escalado por la volatilidad de las últimas `VENTANA_RANGO` TRM) si la serie tiene al
+        menos `VENTANA_RANGO` + 1 TRM; si no, el rango fijo.
 
     Devuelve
     --------
     pd.DataFrame
         Una fila por modelo: ``retorno`` (ln de mañana/hoy), ``movimiento_pb``, ``trm_hoy``,
-        ``trm_manana``, ``movimiento_pesos`` y, si hay `error`, ``trm_min_80`` y ``trm_max_80``.
+        ``trm_manana``, ``movimiento_pesos`` y, si hay `error`, ``trm_min_80``, ``trm_max_80`` y
+        ``rango`` ("adaptativo" o "fijo").
 
     Lanza
     -----
@@ -189,14 +210,21 @@ def predecir(modelos: dict[str, Pipeline], trm: pd.Series, error: dict[str, floa
         raise ValueError(f"se necesitan al menos {MIN_HISTORIA} TRM publicadas y llegaron {len(trm)}")
     x = variables_desde_trm(trm.reset_index(drop=True)).iloc[[-1]]
     hoy = float(trm.iloc[-1])
+    adaptativo = error is not None and "z10" in error and len(trm) > VENTANA_RANGO
+    if adaptativo:
+        vol = float(np.log(trm.reset_index(drop=True)).diff().tail(VENTANA_RANGO).std())
+        bajo, alto = error["z10"] * vol, error["z90"] * vol
+    elif error is not None:
+        bajo, alto = error["p10_retorno"], error["p90_retorno"]
     filas = []
     for nombre, modelo in modelos.items():
         ret = float(modelo.predict(x[VARS_TRM])[0])
         fila = {"modelo": nombre, "retorno": ret, "movimiento_pb": 1e4 * ret, "trm_hoy": hoy,
                 "trm_manana": hoy * np.exp(ret), "movimiento_pesos": hoy * np.exp(ret) - hoy}
         if error is not None:
-            fila["trm_min_80"] = hoy * np.exp(ret + error["p10_retorno"])
-            fila["trm_max_80"] = hoy * np.exp(ret + error["p90_retorno"])
+            fila["trm_min_80"] = hoy * np.exp(ret + bajo)
+            fila["trm_max_80"] = hoy * np.exp(ret + alto)
+            fila["rango"] = "adaptativo" if adaptativo else "fijo"
         filas.append(fila)
     return pd.DataFrame(filas).set_index("modelo")
 

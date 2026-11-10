@@ -244,7 +244,9 @@ def resultado(tabla: pd.DataFrame, r: dict[str, object], hoy: pd.Timestamp, semi
     izquierda = (e.etiquetas(["Medir", "Analizar", "Predecir", e.cuadritos()])
                  + f'<div class="titulo">TRM de<br>la próxima<br>publicación</div>'
                  + e.kpi(f"$ {e.num(f['trm_manana'])}", f"Modelo final (CatBoost). Rango del 80 %: $ {e.num(f['trm_min_80'], 0)} a "
-                                                         f"$ {e.num(f['trm_max_80'], 0)}."))
+                                                         f"$ {e.num(f['trm_max_80'], 0)}"
+                                                         + (" (se ensancha con la volatilidad de las últimas 40 TRM)." if f["rango"] == "adaptativo"
+                                                            else " (rango fijo: hacen falta 41 TRM para medir la volatilidad).")))
     derecha = (e.kpi(f"$ {e.num(f['trm_hoy'])}", f"TRM vigente desde el {ultima:%d/%m/%Y}.", chica=True)
                + e.kpi(("+" if f["movimiento_pesos"] >= 0 else "−") + f"$ {e.num(abs(f['movimiento_pesos']))}", f"Movimiento esperado en pesos ({e.num(f['movimiento_pb'], 1, True)} pb).", chica=True)
                + e.kpi(f"$ {e.num(b['trm_manana'])}", "Línea base (regresión lineal), como referencia.", chica=True))
@@ -332,7 +334,9 @@ def pantalla_confianza(r: dict[str, object]) -> None:
     st.plotly_chart(grafico_test(), width="stretch")
     st.markdown('<p class="nota"><b>Cómo leer esto.</b> El modelo predice movimientos pequeños, porque lo único predecible de la TRM '
                 'a un día es la continuación del movimiento de hoy. Los movimientos grandes (barras) no se anticipan con el dato de ayer. '
-                'Con volatilidad alta, el movimiento de hoy se repite menos (correlación 0,14 frente a 0,23 en periodos tranquilos). '
+                'Con volatilidad alta, el movimiento de hoy se repite menos (correlación 0,14 frente a 0,23 en periodos tranquilos), '
+                'y por eso el rango del 80 % se ensancha con la volatilidad de las últimas 40 TRM: con un rango fijo, la TRM real cayó '
+                'dentro solo el 67 % de los días agitados; con el adaptativo, el 80 % (notebook 10). '
                 'El modelo final empata con una regresión lineal: su valor está en hacerlo con rigor, no en una ventaja grande.</p>',
                 unsafe_allow_html=True)
 

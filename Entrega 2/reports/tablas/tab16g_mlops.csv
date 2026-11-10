@@ -1,0 +1,8 @@
+pieza,ya_existe,siguiente_paso
+Datos versionados,Copias congeladas con MD5 (incluido el monitoreo),Descarga diaria programada con validación automática
+Modelos versionados,Huellas y predicciones de control; ficha del modelo,Registro de modelos (p. ej. MLflow) con métricas por versión
+Validación de datos en uso,Semáforo de coherencia en la aplicación,Alertas automáticas y medidas de deriva (p. ej. PSI de las variables)
+Monitoreo del desempeño,M2: error en los días nuevos y cobertura del rango,Tablero diario del error frente al rango esperado
+Reentrenamiento,"Una vez, con 2003–2026",Política mensual: aceptar el nuevo modelo solo si no es peor (Diebold-Mariano) que el actual
+Pruebas,14 pruebas automáticas + verificador de documentación,M3: ejecutarlas en cada cambio (integración continua)
+Despliegue,Aplicación en Streamlit Community Cloud,Contenedor para no depender de la plataforma
