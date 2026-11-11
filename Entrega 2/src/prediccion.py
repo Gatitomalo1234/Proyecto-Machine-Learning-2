@@ -308,8 +308,10 @@ def chequear_coherencia(tabla_trm: pd.DataFrame, referencia: dict[str, object], 
     t = tabla_trm.sort_values("fecha").reset_index(drop=True)
     filas = []
     dias = int((pd.Timestamp(hoy).normalize() - t["fecha"].iloc[-1]).days)
+    cuando = ("ya publicada; rige desde mañana" if dias < 0 else "rige desde hoy" if dias == 0
+              else f"{dias} días antes de la consulta")         # la TRM se publica la tarde anterior a su vigencia
     filas.append(("datos_recientes", "ok" if dias <= dias_max else "aviso",
-                  f"La última TRM es del {t['fecha'].iloc[-1]:%d/%m/%Y} ({dias} días antes de la consulta)."))
+                  f"La última TRM es del {t['fecha'].iloc[-1]:%d/%m/%Y} ({cuando})."))
     hueco = int(t["fecha"].diff().dt.days.max()) if len(t) > 1 else 0
     completa = len(t) >= MIN_HISTORIA and hueco <= referencia["hueco_max_dias"]
     filas.append(("historia_completa", "ok" if completa else "alerta",
@@ -331,3 +333,96 @@ def chequear_coherencia(tabla_trm: pd.DataFrame, referencia: dict[str, object], 
                   "Los modelos cargados coinciden con su huella documentada." if modelo_verificado else
                   "Los modelos cargados no coinciden con su huella documentada."))
     return pd.DataFrame(filas, columns=["chequeo", "estado", "detalle"]).set_index("chequeo")
+
+
+def aportes_en_pesos(exp: pd.DataFrame, pred: pd.DataFrame, modelo: str = MODELO_FINAL) -> pd.Series:
+    """Pasa los aportes de cada variable de puntos básicos a pesos, de modo que sumen el movimiento esperado.
+
+    Cada aporte se multiplica por la TRM de hoy y por el factor (e^r − 1) / r, donde r es la predicción
+    en retorno; así la suma es exactamente ``movimiento_pesos`` de `predecir`.
+
+    Parámetros
+    ----------
+    exp : pd.DataFrame
+        Resultado de `explicar`.
+    pred : pd.DataFrame
+        Resultado de `predecir` con la misma serie de TRM.
+    modelo : str, por defecto `MODELO_FINAL`
+        Modelo cuyos aportes se convierten.
+
+    Devuelve
+    --------
+    pd.Series
+        Aporte en pesos de ``r_trm_l1``, ``r_trm_l5``, ``r_trm_l10`` y ``base``.
+    """
+    ret = float(pred.loc[modelo, "retorno"])
+    factor = 1.0 if ret == 0 else float(np.expm1(ret) / ret)
+    return exp[modelo] / 1e4 * float(pred.loc[modelo, "trm_hoy"]) * factor
+
+
+def curva_respuesta(modelos: dict[str, Pipeline], trm: pd.Series, desde: float = -3.0, hasta: float = 3.0,
+                    puntos: int = 121) -> pd.DataFrame:
+    """Calcula cómo cambia la predicción de mañana según el movimiento de hoy (la curva en S).
+
+    Deja fijos los movimientos de hace 5 y 10 TRM en sus valores actuales y recorre el de hoy.
+
+    Parámetros
+    ----------
+    modelos : dict[str, Pipeline]
+        Nombre → modelo ajustado sobre `VARS_TRM`.
+    trm : pd.Series
+        TRM publicadas en orden cronológico (al menos `MIN_HISTORIA`).
+    desde, hasta : float, por defecto −3 y 3
+        Movimiento de hoy mínimo y máximo, en % simple.
+    puntos : int, por defecto 121
+        Número de puntos de la curva.
+
+    Devuelve
+    --------
+    pd.DataFrame
+        Columna ``movimiento_hoy_pct`` y una columna por modelo con el movimiento esperado de mañana, en %.
+    """
+    x = variables_desde_trm(trm.reset_index(drop=True)).iloc[[-1]][VARS_TRM]
+    pct = np.linspace(desde, hasta, puntos)
+    X = pd.concat([x] * puntos, ignore_index=True)
+    X["r_trm_l1"] = np.log1p(pct / 100)
+    return pd.DataFrame({"movimiento_hoy_pct": pct, **{m: 100 * np.expm1(mod.predict(X)) for m, mod in modelos.items()}})
+
+
+def prueba_alrededor(modelos: dict[str, Pipeline], serie: pd.DataFrame, fecha: pd.Timestamp,
+                     error: dict[str, float], antes: int = 20, despues: int = 20) -> pd.DataFrame:
+    """Repite la predicción día a día alrededor de una fecha pasada y la compara con la TRM que se publicó.
+
+    Para cada TRM cercana a `fecha` se predice la siguiente usando solo las 60 TRM anteriores (sin mirar
+    el futuro), igual que hace la aplicación con la TRM de hoy.
+
+    Parámetros
+    ----------
+    modelos : dict[str, Pipeline]
+        Debe incluir `MODELO_FINAL`.
+    serie : pd.DataFrame
+        TRM con ``fecha`` y ``valor`` (p. ej. la copia congelada).
+    fecha : pd.Timestamp
+        Fecha central.
+    error : dict[str, float]
+        Resultado de `errores_historicos`, para el rango del 80 %.
+    antes, despues : int, por defecto 20
+        Número de TRM antes y después de `fecha`.
+
+    Devuelve
+    --------
+    pd.DataFrame
+        Una fila por TRM predicha: ``fecha`` (de la TRM predicha), ``real``, ``prediccion``, ``min_80``,
+        ``max_80`` y ``dentro`` (si la real cayó en el rango).
+    """
+    s = serie.sort_values("fecha").reset_index(drop=True)
+    i = int(s.index[s["fecha"] <= pd.Timestamp(fecha)][-1])
+    final = {MODELO_FINAL: modelos[MODELO_FINAL]}
+    filas = []
+    for j in range(max(i - antes, MIN_HISTORIA - 1), min(i + despues, len(s) - 2) + 1):
+        f = predecir(final, s["valor"].iloc[max(0, j - 59):j + 1], error).iloc[0]
+        real = float(s["valor"].iloc[j + 1])
+        filas.append({"fecha": s["fecha"].iloc[j + 1], "real": real, "prediccion": f["trm_manana"],
+                      "min_80": f["trm_min_80"], "max_80": f["trm_max_80"],
+                      "dentro": bool(f["trm_min_80"] <= real <= f["trm_max_80"])})
+    return pd.DataFrame(filas)

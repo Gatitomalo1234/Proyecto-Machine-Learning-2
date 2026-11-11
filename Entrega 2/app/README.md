@@ -22,13 +22,12 @@ python -m pytest            # 14 pruebas; -m "not red" omite la que consulta dat
 
 | Pestaña | Contenido |
 |---|---|
-| **Mañana** | TRM vigente hoy (en vivo), próxima TRM predicha por el modelo final (CatBoost con solo la TRM) y por la regresión lineal, movimiento esperado y rango del 80 %, que se ensancha con la volatilidad de las últimas 40 TRM (notebook 10; con menos de 41 TRM se usa un rango fijo) |
-| **Por qué** | Cuánto aporta a la predicción el movimiento de hoy, el de hace 5 y el de hace 10 TRM (SHAP en CatBoost; aporte exacto en la lineal), en lenguaje sencillo |
-| **Confianza** | Semáforo de coherencia entre entrenamiento y uso, error histórico en el test (2022–2026) y empate con la línea base |
-| **Simular** | Predicción para una fecha pasada (con la TRM que se publicó después) o con TRM escritas a mano |
-| **Modelo** | Ficha del modelo final (`models/ficha_modelo_final.md`) |
+| **Mañana** | Última TRM publicada (en vivo), próxima TRM predicha por el modelo final (CatBoost con solo la TRM) y por la regresión lineal, movimiento esperado y rango del 80 %, que se ensancha con la volatilidad de las últimas 40 TRM (notebook 10; con menos de 41 TRM se usa un rango fijo) |
+| **Por qué** | Una frase con el movimiento de hoy y el esperado para mañana; cuántos pesos aporta cada movimiento (SHAP en CatBoost, convertido a pesos; la lineal como referencia); la curva en S (cómo responde el modelo al movimiento de hoy, dentro del 99 % de lo visto en el entrenamiento) y tres ideas clave |
+| **Confianza** | Semáforo de coherencia entre entrenamiento y uso, error histórico en el test (2022–2026), empate con la línea base y, en un desplegable, la ficha corta del modelo (completa en `models/ficha_modelo_final.md`) |
+| **Simular** | **Fecha pasada:** semáforo en fichas, gráfico «lo que vio, lo que predijo, lo que pasó», aportes en pesos y la predicción repetida día a día en las 20 TRM antes y después (con su rango del 80 %). **Escribir:** un control para el movimiento de hoy (las 10 TRM anteriores se editan en un desplegable), con los aportes y la curva en S |
 
-**"Próxima TRM"** es la siguiente que publique la Superintendencia Financiera: después de un viernes, la del lunes (o la del martes si el lunes es festivo).
+**"Próxima TRM"** es la siguiente que publique la Superintendencia Financiera. La del fin de semana rige desde el sábado hasta el lunes (o hasta el martes si el lunes es festivo). Como la TRM se publica la tarde anterior a su vigencia, en la tarde la "TRM vigente" que muestra la app es la que rige desde mañana.
 
 ## De dónde salen los datos y los modelos
 

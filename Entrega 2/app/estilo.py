@@ -69,6 +69,14 @@ header[data-testid="stHeader"] {{ background: transparent; }}
 .etiqueta-origen {{ display: inline-block; border: 1px solid {LINEA}; padding: 3px 10px; font-size: 10px;
     letter-spacing: .2em; text-transform: uppercase; color: #cfcfd4; }}
 div[data-testid="stMetric"] {{ background: transparent; }}
+.fichas {{ display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 14px 0; }}
+.ficha {{ display: flex; align-items: center; border: 1px solid {LINEA}; padding: 8px 14px; font-size: 12.5px;
+    color: #dcdce0; background: rgba(255,255,255,.03); }}
+.ficha .estado {{ margin-left: 10px; font-size: 10px; letter-spacing: .18em; color: {TENUE}; }}
+.claves {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; margin: 10px 0 6px 0; }}
+.clave {{ border-top: 1px solid {LINEA}; padding-top: 12px; color: #d9d9de; font-size: 14.5px; line-height: 1.5; }}
+.texto.grande {{ font-size: 19px; line-height: 1.6; max-width: 760px; }}
+[data-testid="stExpander"] summary p {{ font-size: 11px !important; letter-spacing: .2em; text-transform: uppercase; color: #cfcfd4; }}
 [data-testid="stWidgetLabel"] p {{ font-size: 11px !important; letter-spacing: .2em; text-transform: uppercase; color: {TENUE}; }}
 </style>
 """
@@ -231,6 +239,39 @@ def punto(estado: str) -> str:
         HTML del punto.
     """
     return f'<span class="punto" style="background:{COLOR_ESTADO.get(estado, TENUE)}"></span>'
+
+
+def fichas(items: list[tuple[str, str]]) -> str:
+    """Construye la fila de fichas del semáforo: un punto de color, el nombre del chequeo y su estado.
+
+    Parámetros
+    ----------
+    items : list[tuple[str, str]]
+        Pares (nombre del chequeo, estado "ok", "aviso" o "alerta").
+
+    Devuelve
+    --------
+    str
+        HTML de la fila de fichas.
+    """
+    return ('<div class="fichas">' + "".join(f'<div class="ficha">{punto(estado)}{nombre}<span class="estado">{estado.upper()}</span></div>'
+                                             for nombre, estado in items) + "</div>")
+
+
+def claves(textos: list[str]) -> str:
+    """Construye una fila de frases cortas separadas por líneas finas (en lugar de un párrafo largo).
+
+    Parámetros
+    ----------
+    textos : list[str]
+        Frases, de izquierda a derecha (pueden llevar HTML simple).
+
+    Devuelve
+    --------
+    str
+        HTML de la fila.
+    """
+    return '<div class="claves">' + "".join(f'<div class="clave">{t}</div>' for t in textos) + "</div>"
 
 
 def filas(cabeza: list[str], cuerpo: list[list[str]], columnas: str) -> str:

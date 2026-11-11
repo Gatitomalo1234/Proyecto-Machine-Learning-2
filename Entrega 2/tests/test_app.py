@@ -8,9 +8,9 @@ from streamlit.testing.v1 import AppTest
 
 
 def test_app_arranca_y_recorre_los_modos() -> None:
-    """La app carga las 5 pestañas, permite escribir TRM y simular una fecha de crisis (que dispara alertas)."""
+    """La app carga las 4 pestañas, permite escribir TRM y simular una fecha de crisis (que dispara alertas)."""
     at = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app" / "app.py"), default_timeout=180).run()
-    assert not at.exception and len(at.tabs) == 5
+    assert not at.exception and len(at.tabs) == 4
     at.radio[0].set_value("Escribir las últimas TRM").run()
     assert not at.exception
     at.radio[0].set_value("Una fecha pasada").run()
