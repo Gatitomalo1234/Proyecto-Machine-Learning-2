@@ -1,4 +1,4 @@
-# Dependencias de la aplicación (Streamlit Community Cloud las busca junto a app/app.py).
+# Dependencias de la aplicación Streamlit (Entrega 2/app/app.py). Van en la raíz del repositorio porque la carpeta "Entrega 2" tiene un espacio y Streamlit Community Cloud no lo maneja si el archivo está junto a app.py.
 # Versiones exactas del entorno con que se entrenaron los modelos (Python 3.12): scikit-learn y
 # catboost deben coincidir para cargar models/modelo_final_despliegue.joblib.
 streamlit==1.67.0

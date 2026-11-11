@@ -52,5 +52,5 @@ python -m pytest            # 14 pruebas; -m "not red" omite la que consulta dat
 
 1. En [share.streamlit.io](https://share.streamlit.io), **Create app** → desde el repositorio `Gatitomalo1234/Proyecto-Machine-Learning-2`, rama `main`.
 2. **Main file path:** `Entrega 2/app/app.py`.
-3. **Advanced settings → Python version:** 3.12 (las versiones de `app/requirements.txt` son las del entrenamiento; scikit-learn y catboost deben coincidir para cargar el modelo).
-4. Streamlit instala `app/requirements.txt` (está junto a `app.py`). El tema oscuro está en `.streamlit/config.toml` (copia en la raíz del repositorio para la nube y en `Entrega 2/` para uso local); el estilo principal va en el CSS de `app/estilo.py`, así que no depende de él.
+3. **Advanced settings → Python version:** 3.12 (las versiones de `requirements.txt` de la raíz del repositorio son las del entrenamiento; scikit-learn y catboost deben coincidir para cargar el modelo). La versión de Python solo se elige al crear la app: si quedó otra, hay que borrarla y desplegarla de nuevo.
+4. Streamlit instala el `requirements.txt` de la **raíz del repositorio**. No va junto a `app.py` porque la carpeta `Entrega 2` tiene un espacio y la nube parte la ruta en dos al instalar (`Failed to parse: 2/app/requirements.txt`). El tema oscuro está en `.streamlit/config.toml` (copia en la raíz del repositorio para la nube y en `Entrega 2/` para uso local); el estilo principal va en el CSS de `app/estilo.py`, así que no depende de él.

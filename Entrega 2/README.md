@@ -50,7 +50,7 @@ Entrega 2/
 ├── data/raw/articulo/         Datos del artículo base (5 pares de divisas del repositorio del autor) + metadatos.json
 ├── data/raw/monitoreo/        TRM descargadas el 10/11/2026 para evaluar el modelo en días nuevos (notebook 10) + metadatos.json
 ├── data/processed/            series_limpias, dataset, particion, predicciones de validación y de test
-├── app/                       Aplicación Streamlit (app.py, estilo.py, README.md, requirements.txt): ver app/README.md
+├── app/                       Aplicación Streamlit (app.py, estilo.py, README.md): ver app/README.md; sus dependencias, en ../requirements.txt
 ├── tests/                     14 pruebas automáticas (pytest) del núcleo de la app y de la app
 ├── models/                    modelos_finales.joblib (los 7 modelos congelados; el notebook 05 los regenera idénticos);
 │                              modelo_final_despliegue.joblib (modelo final + línea base con 2003–2026, para la app);
