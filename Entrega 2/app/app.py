@@ -10,6 +10,7 @@ Ejecutar desde la carpeta Entrega 2/:
 """
 from __future__ import annotations
 
+import importlib
 import json
 import sys
 from pathlib import Path
@@ -26,6 +27,10 @@ import streamlit as st                                               # noqa: E40
 
 import estilo as e                                                   # noqa: E402
 from src import prediccion as p                                      # noqa: E402
+
+# Streamlit Cloud aplica un push volviendo a correr app.py sin reiniciar Python: sin esto seguiría usando
+# las versiones viejas de src/prediccion.py y estilo.py que ya tenía en memoria.
+e, p = importlib.reload(e), importlib.reload(p)
 from src.config import DATA_PROC, MODELOS                            # noqa: E402
 from src.descarga import leer                                        # noqa: E402
 
