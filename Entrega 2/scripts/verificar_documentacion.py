@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 RAIZ = Path(__file__).resolve().parents[1]
-CARPETAS_PY = ["src", "scripts", "reports/informe", "app"]   # módulos que se revisan
+CARPETAS_PY = ["src", "scripts", "reports/informe", "reports/informe_final", "app"]   # módulos que se revisan
 SECCION = re.compile(r"^\s*(Parámetros|Devuelve|Lanza|Notas)\s*\n\s*-{3,}\s*$", re.MULTILINE)
 FuncionAST = ast.FunctionDef | ast.AsyncFunctionDef
 

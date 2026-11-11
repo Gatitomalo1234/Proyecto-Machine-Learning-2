@@ -16,9 +16,32 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import pandas as pd
+    from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
 COLORES = ["#1f4e79", "#c0504d", "#4f8a3a", "#8064a2", "#d98c1f", "#2c8c99", "#7f7f7f"]   # paleta de todas las figuras
+
+# Letra para las figuras de tres paneles que el informe final imprime a todo el ancho (≈ 7 pt impresas).
+LETRA_GRANDE = {"font.size": 15, "axes.titlesize": 15, "axes.labelsize": 14, "xtick.labelsize": 13,
+                "ytick.labelsize": 13, "legend.fontsize": 12}
+
+
+def coma_decimal(eje: Axes, ejes: str = "xy") -> None:
+    """Escribe los números de los ejes con coma decimal y signo menos tipográfico (formato del informe).
+
+    Parámetros
+    ----------
+    eje : matplotlib.axes.Axes
+        Eje que se formatea.
+    ejes : str, por defecto "xy"
+        Qué ejes numéricos cambiar: "x", "y" o "xy" (no usar en un eje de categorías).
+    """
+    from matplotlib.ticker import FuncFormatter
+    formato = FuncFormatter(lambda v, _: f"{v:g}".replace("-", "−").replace(".", ","))
+    if "x" in ejes:
+        eje.xaxis.set_major_formatter(formato)
+    if "y" in ejes:
+        eje.yaxis.set_major_formatter(formato)
 
 
 def estilo() -> None:

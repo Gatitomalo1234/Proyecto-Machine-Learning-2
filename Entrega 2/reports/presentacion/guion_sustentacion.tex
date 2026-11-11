@@ -1,0 +1,141 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs,longtable,array,enumitem,xcolor}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parindent}{0pt}\setlength{\parskip}{4pt}
+\setlist{itemsep=3pt, topsep=3pt}
+\definecolor{oro}{HTML}{9A7B2F}
+\newcommand{\diapo}[4]{\par\bigskip{\color{oro}\textbf{#1.}}~\textbf{#2}\hfill{\small #3 · #4}\par\nopagebreak\smallskip}
+\begin{document}
+{\Large\textbf{Guion de la sustentación final}}\par
+\textbf{¿Mejoran el petróleo, las tasas y el dólar global la predicción diaria de la TRM?}\par
+Proyecto Integrador · Machine Learning II · Universidad Externado de Colombia\par
+Nicolás Cárdenas Díaz y María Paula Muñoz Malaver · noviembre de 2026\par
+\medskip
+Presentación: \texttt{sustentacion\_final.pdf} (17 diapositivas, unos 10 minutos). Aplicación: \url{https://modelo-proyectoml2-trm.streamlit.app/}
+
+\section*{La historia en una frase}
+Las variables macro no mejoran la predicción diaria de la TRM (en el test la empeoran); ningún boosting le gana a una regresión lineal; lo único predecible es que mañana repite una pequeña parte del movimiento de hoy; y el R² de 0,99 del artículo mide persistencia, no predicción.
+
+\section*{Orden, reparto y tiempos}
+\begin{longtable}{>{\raggedleft}p{0.5cm} p{9.6cm} p{2.3cm} r r}
+\toprule
+\# & Diapositiva & Habla & Tiempo & Acumulado \\
+\midrule
+1 & ¿Mejoran el petróleo, las tasas y el dólar global la predicción diaria de la TRM? & Nicolás & 15 s & 0:15 \\
+2 & La TRM cambia todos los días, y equivocarse cuesta & Nicolás & 30 s & 0:45 \\
+3 & Tres boosting predicen divisas casi a la perfección & Nicolás & 35 s & 1:20 \\
+4 & ¿Ayudan el petróleo, el dólar y las tasas a predecir la TRM? & Nicolás & 35 s & 1:55 \\
+5 & Cada dato entra solo cuando ya se conocía & Nicolás & 40 s & 2:35 \\
+6 & El método del artículo, tal cual, choca con un techo & María Paula & 35 s & 3:10 \\
+7 & Siete modelos para una misma pregunta & María Paula & 35 s & 3:45 \\
+8 & Validamos como si fuera el futuro & María Paula & 35 s & 4:20 \\
+9 & Ningún boosting le gana a una regresión lineal & María Paula & 35 s & 4:55 \\
+10 & Las macro no ayudan; en el test, empeoran & María Paula & 35 s & 5:30 \\
+11 & Poca señal y un régimen que no se repitió & María Paula & 40 s & 6:10 \\
+12 & Su R² no mide predicción: mide que mañana se parece a hoy & María Paula & 35 s & 6:45 \\
+13 & Un modelo a la medida de cómo se forma la TRM & Nicolás & 40 s & 7:25 \\
+14 & Sirve para presupuestar, no para adivinar & Nicolás & 35 s & 8:00 \\
+15 & Demo: la aplicación en vivo & Nicolás & 60 s & 9:00 \\
+16 & Lo que el proyecto no resuelve, y cómo seguir & María Paula & 30 s & 9:30 \\
+17 & El petróleo, el dólar y las tasas no ayudan a predecir la TRM de mañana & Nicolás & 30 s & 10:00 \\
+\bottomrule
+\end{longtable}
+Nicolás abre, cuenta el planteamiento, los datos sin fuga, el modelo final, el importador y la demo, y cierra; María Paula cuenta la reproducción, el experimento, la validación, los resultados, por qué no funcionó, el artículo y las limitaciones. Ensayen también al revés: cualquiera debe poder contestar cualquier pregunta.
+
+\section*{Antes de entrar}
+\begin{itemize}
+\item Abrir la aplicación unos minutos antes (Streamlit Cloud la duerme si no se usa) y dejarla en la pestaña MAÑANA.
+\item Tener a mano la presentación en PDF y el enlace del repositorio. Si falla internet, la diapositiva 15 trae la captura de la app del 10/11/2026.
+\item Ensayar con cronómetro: el total es de 10 minutos; la demo es lo más fácil de alargar.
+\end{itemize}
+
+\newpage
+\section*{Guion por diapositiva}
+Lo que sigue es lo que se dice, no se lee: sirve para ensayar. En cursiva, la respuesta preparada si preguntan.
+\section*{Inicio: la pregunta}
+\diapo{1}{¿Mejoran el petróleo, las tasas y el dólar global la predicción diaria de la TRM?}{Nicolás}{15 s}
+Buenas tardes. Somos Nicolás Cárdenas y María Paula Muñoz. Les traemos una pregunta que parece obvia: si el petróleo, las tasas de interés y el dólar global mueven el peso colombiano, ¿sirven para predecir la TRM de mañana? Lo que encontramos nos sorprendió.
+
+\diapo{2}{La TRM cambia todos los días, y equivocarse cuesta}{Nicolás}{30 s}
+La TRM es el precio oficial del dólar en Colombia: el promedio de lo que se negoció en un día. En veinte años pasó de menos de 2.000 a más de 5.000 pesos, con saltos en la crisis de 2008, la caída del petróleo y la pandemia. ¿Por qué importa acertarle? Porque para una empresa que compra USD 100.000, cada peso de error son 100.000 pesos. Por eso nos enfocamos en lo que más necesita quien compra o vende dólares: la TRM de mañana.
+
+\section*{Fase 1: el artículo y nuestro planteamiento}
+\diapo{3}{Tres boosting predicen divisas casi a la perfección}{Nicolás}{35 s}
+Partimos de un artículo de 2023 que compara tres algoritmos de gradient boosting, LightGBM, CatBoost y XGBoost, en cinco pares de divisas. Su receta es simple: toman el precio, lo escalan, entrenan con el 80 \% de los días y evalúan en el 20 \% final, con la configuración por defecto. Reportan R² de hasta 0,99 y concluyen que LightGBM gana, por poco. Un 0,99 suena a predicción casi perfecta. Guarden ese número: más adelante vamos a ver qué mide de verdad.
+
+\diapo{4}{¿Ayudan el petróleo, el dólar y las tasas a predecir la TRM?}{Nicolás}{35 s}
+Nuestra adaptación cambia la pregunta: no solo qué algoritmo gana, sino si lo que mueve al peso le agrega algo a la propia historia de la TRM. Elegimos tres candidatos con sentido económico: el petróleo Brent, porque Colombia exporta petróleo; el DXY, que mide la fuerza del dólar en el mundo; y la diferencia entre la tasa del Banco de la República y la de la Fed, que atrae o ahuyenta capitales. Son 5.401 días de fuentes oficiales, de 2003 a 2026, sin simulación: 4.320 para desarrollar y 1.080 para el test, que es la zona sombreada.
+
+\section*{Fase 2: datos, reproducción, adaptación, validación y resultados}
+\diapo{5}{Cada dato entra solo cuando ya se conocía}{Nicolás}{40 s}
+La regla de oro del proyecto: nunca usar información que todavía no existía. Arriba, los datos: descargamos de fuentes oficiales y congelamos la copia con una huella MD5, porque las fuentes corrigen el pasado; cada día usa el último dato publicado antes de él, y a la Fed le damos un día extra porque publica tarde; y la partición es cronológica, con el test cerrado hasta el final. Abajo, el modelado: todo lo que aprende de los datos, como los hiperparámetros y el escalado, se ajusta solo con el entrenamiento. Y lo comprobamos: si alteramos todo el futuro, ninguna variable del pasado cambia.
+\par\smallskip{\small\textit{Si preguntan: ¿Hay fuga de información? No: prueba de perturbación, 5 días de separación entre entrenar y validar, y test abierto una sola vez.}}
+
+\diapo{6}{El método del artículo, tal cual, choca con un techo}{María Paula}{35 s}
+Primero copiamos el método del artículo tal cual, con la TRM. Y chocamos con un techo. Un árbol solo puede predecir valores parecidos a los que ya vio: entrenando hasta 2018, el máximo era 3.435 pesos; los árboles nunca pasaron de 3.418, mientras la TRM se fue por encima de 4.100. Errores de 295 a 333 pesos. La salida fue cambiar la pregunta: en vez del precio, predecimos el cambio de mañana, el retorno logarítmico, que se mueve en el mismo rango en cualquier época. Con él volvemos al precio en pesos.
+\par\smallskip{\small\textit{Si preguntan: ¿Por qué el retorno logarítmico? Es estacionario, se suma entre días y vuelve exacto al precio (TRM de hoy por e elevado a la predicción); además, los árboles no extrapolan niveles.}}
+
+\diapo{7}{Siete modelos para una misma pregunta}{María Paula}{35 s}
+Con eso armamos el experimento: siete modelos para una sola pregunta. Cada boosting se entrena dos veces: con solo la historia de la TRM, que son el movimiento de hoy, el de hace 5 y el de hace 10 publicaciones; y con esa misma historia más el petróleo, el dólar global y el diferencial de tasas. Son seis, más la vara de medir: una regresión lineal con solo la TRM. La matriz se lee fácil: si la columna de la derecha gana, las macro ayudan; si una fila gana, ese es el mejor algoritmo; y todos tienen que superar a la lineal. Todos predicen lo mismo: el cambio de mañana.
+
+\diapo{8}{Validamos como si fuera el futuro}{María Paula}{35 s}
+Para medir sin hacer trampa, simulamos el uso real. En cada uno de los cinco cortes, el modelo entrena con todo el pasado y se evalúa en los tres años siguientes, que nunca vio, con cinco días de separación. Dentro de cada corte, otra validación en el tiempo elige los hiperparámetros entre 15 combinaciones. En total, 3.600 días de prueba. Y como dos errores pueden diferir por azar, usamos la prueba de Diebold-Mariano y un bootstrap por bloques para saber si una diferencia es real o es ruido. El test, de 2022 a 2026, quedó bajo llave hasta el final.
+
+\diapo{9}{Ningún boosting le gana a una regresión lineal}{María Paula}{35 s}
+Primer resultado, en validación. Cada punto es cuánto cambia el error frente a la regresión lineal, y la barra es su intervalo del 95 \%. Fíjense: todas las barras cruzan el cero. Ningún boosting se distingue de la lineal, con p entre 0,32 y 0,82. El mejor, CatBoost con solo la TRM, ahorra 16 centavos de error, pero su intervalo va de $-$0,49 a +0,13: es ruido. A la derecha, con macro frente a sin macro: tampoco hay diferencia, con p entre 0,12 y 0,95.
+
+\diapo{10}{Las macro no ayudan; en el test, empeoran}{María Paula}{35 s}
+Después abrimos el test, una sola vez. La métrica que manda es el RMSE en pesos, porque castiga los días de error grande, que son los que más le duelen a quien compra dólares; con ella, en validación, elegimos el modelo. Las versiones con solo la TRM empatan con la lineal. Pero las tres con macro, en rojo, son significativamente peores, con p entre 0,01 y 0,04: CatBoost y XGBoost con macro pierden unos 70 centavos por dólar. Entonces, ¿qué algoritmo aprovecha mejor las macro? Ninguno; LightGBM es el que menos se perjudica. Y el R² muestra cuánto se alcanza a explicar: menos del 4 \%.
+\par\smallskip{\small\textit{Si preguntan: ¿Entonces el petróleo no afecta la TRM? La conclusión es predictiva y a un día, no causal: el dato de hoy no anticipa el movimiento de mañana.}}
+
+\section*{Fase 3: interpretación, modelo final, despliegue y limitaciones}
+\diapo{11}{Poca señal y un régimen que no se repitió}{María Paula}{40 s}
+¿Por qué no funcionó? Dos razones. Una: hay muy poca señal. La única memoria es la del día anterior, de 0,17; una relación lineal explica cerca del 3 \% del movimiento diario, y el petróleo y el dólar casi no se relacionan con lo que pasa mañana. Dos, y esta es la más interesante: el diferencial de tasas engañó al modelo. En el desarrollo, el diferencial pasó de 7,8 puntos solo en la crisis de 2008–09, cuando el peso se devaluaba, y el modelo aprendió esa coincidencia como regla. En el test volvió a subir, pero por otra razón: el Banco de la República subió tasas para frenar la inflación, y el peso se revaluó. Mismo dato, historia opuesta: el modelo se equivocó de dirección.
+
+\diapo{12}{Su R² no mide predicción: mide que mañana se parece a hoy}{María Paula}{35 s}
+Entonces, ¿cómo logra el artículo un R² de 0,99? Reprodujimos su método con sus propios datos y recuperamos sus números: 0,891 frente a 0,896 en libra-dólar. Luego hicimos una prueba sencilla: usar el precio de hoy como predicción de mañana, sin ningún modelo. Ese atajo da R² de 0,98 a 0,99 en los cinco pares, y les gana a sus modelos en todos. Su métrica mide que mañana se parece a hoy, no que el modelo prediga. Además, sus monedas casi no salen del rango de entrenamiento, mientras la TRM se salió el 59 \% de los días. Y encontramos siete datos erróneos en sus archivos. El método se reprodujo; lo que no se sostiene es su conclusión.
+
+\diapo{13}{Un modelo a la medida de cómo se forma la TRM}{Nicolás}{40 s}
+Con todo esto, ¿qué modelo dejamos? CatBoost con solo la TRM, por cuatro razones. Uno: no lo elegimos a ojo; desde la Entrega 2 fijamos la regla de quedarnos con el de menor error en validación, salvo que fuera peor que la base, y el test no la cambió. Dos: la única señal viene de cómo se calcula la TRM; al ser el promedio del día, una pequeña parte del movimiento de hoy se repite mañana. Tres: las macro no aportan, así que lo más simple es lo mejor. Y cuatro, por qué un árbol: si hoy la TRM sube 3 \%, la lineal espera +50 puntos básicos mañana; el árbol aprende un tope y se queda en +35, porque un salto grande no se repite en proporción.
+\par\smallskip{\small\textit{Si preguntanpor qué CatBoost y no LightGBM o XGBoost: con tan poca señal los tres quedan a centavos, y la regla fijada antes del test eligió el de menor error en validación.}}
+\par\smallskip{\small\textit{Si preguntanpor qué no la lineal, si empata: la regla se fijó antes y no la cambiamos al ver el resultado; no es peor que la lineal (p = 0,32 en validación y 0,90 en test), reportamos el empate y la lineal queda en la app como referencia.}}
+
+\diapo{14}{Sirve para presupuestar, no para adivinar}{Nicolás}{35 s}
+¿Y esto para qué le sirve a alguien? Imaginen un importador que compra USD 100.000 mañana. Un día normal, como el 10 de noviembre, el modelo le da un presupuesto de 327,7 millones de pesos, y 8 de cada 10 días el costo real cae entre 324,5 y 331,3 millones. Ahora el peor día del test, el 7 de octubre de 2023: el modelo esperaba casi lo mismo que el día anterior, y la TRM cayó unos 155 pesos; el presupuesto se desvió 15,8 millones. Esos saltos nadie los anticipa. En los 1.080 días, frente a suponer que mañana es igual a hoy, ahorra 0,39 pesos por dólar: unos 39.000 pesos por compra. Poco, pero real. Lo que no sirve es para elegir cuándo comprar: acierta la dirección el 55 \% de los días, casi como decir siempre que baja.
+
+\diapo{15}{Demo: la aplicación en vivo}{Nicolás}{60 s}
+Y todo esto está desplegado. [Abrir modelo-proyectoml2-trm.streamlit.app.] La app toma la última TRM publicada en datos.gov.co, y en la pestaña MAÑANA muestra la TRM de la próxima publicación con su rango del 80 \%, junto a la regresión lineal como referencia. En POR QUÉ, SHAP explica cuánto aportó cada movimiento a esta predicción. En CONFIANZA, un semáforo revisa que los datos de hoy se parezcan a los del entrenamiento. Y en SIMULAR, si ponemos el 10 de octubre de 2008, en plena crisis, salta la alerta de volatilidad. Además la probamos con 28 TRM publicadas después del test: el rango contuvo la TRM real en 26. [Si falla internet: la tarjeta de esta diapositiva es la captura del 10 de noviembre de 2026.]
+
+\diapo{16}{Lo que el proyecto no resuelve, y cómo seguir}{María Paula}{30 s}
+¿Qué no resuelve el proyecto? Lo principal: hay poca señal. Con lo que se sabe hoy solo se anticipa cerca del 3 \% del movimiento de mañana; el techo está en los datos, no en el algoritmo. Para avanzar harían falta datos del mismo día, como el VIX, el peso mexicano o las intervenciones del Banco de la República. También vale la pena predecir el tamaño del movimiento, que sí tiene memoria, y mirar horizontes de semanas. Y ojo con el alcance: la conclusión es predictiva, no causal. Modelos como LSTM o DeepAR quedan como trabajo futuro, sin prometer mejora.
+\par\smallskip{\small\textit{Si preguntan: ¿Por qué no Deep Learning? Con $\approx$ 3 \% de señal no hay base para prometer una mejora; queda como trabajo futuro, evaluado con el mismo protocolo.}}
+
+\section*{Cierre}
+\diapo{17}{El petróleo, el dólar y las tasas no ayudan a predecir la TRM de mañana}{Nicolás}{30 s}
+Volvamos a la pregunta del inicio: ¿el petróleo, el dólar y las tasas ayudan a predecir la TRM de mañana? No. Probamos siete modelos con un test que abrimos una sola vez: las macro no mejoran nada, y en el test empeoran. Ningún boosting le gana a una recta. Lo único predecible es que mañana repite un poquito del movimiento de hoy, y eso vale unos 0,4 pesos por dólar. Y la lección que nos llevamos: un R² de 0,99 no prueba que un modelo prediga, porque copiar el precio de hoy da lo mismo. Muchas gracias; quedamos atentos a sus preguntas.
+
+
+\newpage
+\section*{Preguntas probables y respuesta corta}
+\begin{enumerate}
+\item \textbf{¿Hay fuga de información?} No. Cada variable usa solo datos publicados antes del día que predice, la Fed con un día extra; prueba de perturbación (alterar el futuro no cambia ninguna variable del pasado); 5 días de separación entre entrenar y validar; test abierto una sola vez.
+\item \textbf{¿Por qué el retorno logarítmico y no el precio?} Los árboles no extrapolan: con el precio quedan bajo el máximo del entrenamiento (3.435) y la TRM pasó de 4.100. El retorno log es estacionario, se suma entre días y vuelve exacto al precio: TRM de mañana = TRM de hoy por e elevado a la predicción.
+\item \textbf{¿Por qué CatBoost si empata con la lineal?} La regla, fijada antes de abrir el test, era quedarse con el menor RMSE en validación salvo que fuera peor que la base. No es peor (p = 0,32 en validación y 0,90 en test) y reportamos el empate. Además aprende un tope que la recta no tiene; la lineal queda en la app como referencia.
+\item \textbf{¿Por qué CatBoost y no LightGBM o XGBoost?} Con tan poca señal los tres quedan a centavos (20,71 a 20,81 de RMSE). La regla eligió el de menor error en validación.
+\item \textbf{¿Entonces el petróleo no afecta la TRM?} La conclusión es predictiva y a un día, no causal: el dato de hoy no anticipa el movimiento de mañana. Su efecto se refleja en la TRM el mismo día.
+\item \textbf{¿Por qué al artículo sí le funciona?} Su R² en nivel mide persistencia: copiar el precio de hoy da 0,98 a 0,99 en sus cinco pares y supera a sus modelos. Sus monedas casi no salen del rango de entrenamiento (0 a 11 \% de los días); la TRM se salió el 59 \%.
+\item \textbf{¿Qué es Diebold-Mariano?} Una prueba para decir si la diferencia de error entre dos pronósticos es real o ruido. Usamos pérdida cuadrática en pesos, varianza de Newey-West y la corrección de Harvey-Leybourne-Newbold; lo confirmamos con un bootstrap por bloques de 20 días.
+\item \textbf{¿Por qué falla el diferencial de tasas?} En el desarrollo, un diferencial mayor a 7,8 puntos solo ocurrió en la crisis de 2008-09, con devaluación; el modelo lo aprendió como regla. En el test volvió a ser alto por la lucha contra la inflación, con revaluación. Es un cambio de régimen, no fuga ni extrapolación.
+\item \textbf{¿Probaron más días de rezago?} Sí, por la retroalimentación de la Entrega 2 (notebook 07): rezagos de 1 a 20 días y ventanas de tendencia y volatilidad. Ninguno cumple la regla de mejora; la memoria de la TRM es de un día.
+\item \textbf{¿Qué tan confiable es el rango del 80 \%?} El rango fijo cubría el 71 \% en el test, porque los errores crecen con la volatilidad. Escalado por la volatilidad de las últimas 40 TRM cubre el 80 \%, también en los periodos agitados. Con 28 TRM nuevas, 26 cayeron dentro.
+\item \textbf{¿Cómo saben que la app usa el mismo modelo?} Al cargarlo compara 25 predicciones de control con las guardadas (tolerancia 1e-9), y las pruebas comprueban que sus variables son idénticas a las del entrenamiento en los 5.401 días.
+\item \textbf{¿Por qué no Deep Learning?} Con cerca de 3 \% de señal no hay base para prometer una mejora. LSTM, TFT o DeepAR quedan como trabajo futuro, evaluados con el mismo protocolo.
+\item \textbf{¿Le sirve a un importador?} Para presupuestar y medir el riesgo del día: error típico de COP 2,7 millones en una compra de USD 100.000 y ahorro de 0,39 pesos por dólar frente a no usar modelo (p = 0,002). No para elegir cuándo comprar: acierta la dirección el 55 \% de los días (p = 0,16).
+\item \textbf{¿Cómo documentaron el código?} Todas las funciones con docstring en español (qué hacen, qué reciben, qué devuelven); un verificador corre en el notebook 0 y falla si falta alguna.
+\end{enumerate}
+\end{document}

@@ -58,7 +58,9 @@ Entrega 2/
 ├── reports/figuras/           fig01–fig16 y figE1–figE5 (fig07–08: ventanas; fig09–10: modelo final y diferencial; fig11: artículo frente a la TRM; fig12–14: interpretación; fig15–16: rango adaptativo y monitoreo)
 ├── reports/tablas/            74 tablas numeradas (tab00–tab16 y tabE1–tabE10; tab10*: ventanas; tab11–12*, tab14*: modelo final; tab13*: datos del artículo; tab15*: interpretación; tab16*: limitaciones y proyección)
 ├── reports/informe/           Informe de la entrega (LaTeX + PDF) y los scripts que arman sus tablas y figuras
-└── reports/guia_sustentacion.md  Guion y preguntas probables para la sustentación oral
+├── reports/informe_final/     Informe final del proyecto (LaTeX + PDF); tablas y figuras generadas con tablas_latex.py y preparar_figuras.py
+├── reports/presentacion/      Sustentación final: presentación en PDF, guion (guion_sustentacion.pdf) y enlaces
+└── reports/guia_sustentacion.md  Guion y preguntas de la sustentación de la Entrega 2 (el de la final está en reports/presentacion/)
 ```
 
 ---
@@ -123,6 +125,10 @@ python scripts/verificar_documentacion.py
 El script revisa que cada módulo y cada función tengan docstring, que se documente cada parámetro, lo que se devuelve y lo que se lanza, y que haya tipos. Termina con código 1 y la lista de faltantes si algo no cumple.
 
 ## Informe
+
+**Informe final** (proyecto completo): `reports/informe_final/informe_final.pdf`. Para regenerarlo: `python reports/informe_final/preparar_figuras.py`, `python reports/informe_final/tablas_latex.py` y `pdflatex informe_final.tex` dos veces (desde `reports/informe_final/`).
+
+**Informe de la Entrega 2:**
 
 El informe está en `reports/informe/informe_entrega2.pdf`. Sus tablas y figuras no se copian a mano: se generan a partir de las salidas de los notebooks, así que las cifras coinciden por construcción. Para regenerarlo después de correr los notebooks:
 

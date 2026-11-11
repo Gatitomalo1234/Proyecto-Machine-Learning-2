@@ -1,0 +1,18 @@
+\begin{tabular}{llccc|cccc}
+\toprule
+ & & \multicolumn{3}{c|}{Validación (2006--2022, 5 cortes)} & \multicolumn{4}{c}{Test (2022--2026, una sola vez)} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-9}
+Algoritmo & Variables & RMSE & $R^2$ & $p$ DM & RMSE & MAE & $R^2$ & $p$ DM \\
+\midrule
+Línea base (lineal) & solo TRM & 20,83 & 0,019 & -- & \textbf{35,63} & 27,10 & 0,037 & -- \\
+\addlinespace[2pt]
+LightGBM & solo TRM & 20,77 & 0,017 & 0,45 & 35,75 & 27,22 & 0,032 & 0,11 \\
+ & TRM + macro & 20,77 & 0,018 & 0,46 & 35,86 & 27,26 & 0,027 & 0,04 \\
+\addlinespace[2pt]
+CatBoost & solo TRM & \textbf{20,71} & 0,025 & 0,32 & 35,64 & 27,09 & 0,037 & 0,90 \\
+ & TRM + macro & 20,77 & 0,018 & 0,43 & 36,31 & 27,81 & 0,001 & 0,01 \\
+\addlinespace[2pt]
+XGBoost & solo TRM & 20,81 & 0,016 & 0,69 & 35,79 & 27,25 & 0,029 & 0,26 \\
+ & TRM + macro & 20,94 & $-$0,002 & 0,82 & 36,32 & 27,82 & $-$0,001 & 0,01 \\
+\bottomrule
+\end{tabular}
